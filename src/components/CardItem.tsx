@@ -3,7 +3,7 @@ import { useBookmarkPost, useLikePost } from "@/hooks/useApi";
 import { Post } from "@/types/api";
 import { capitalizeWords } from "@/utils/strings";
 import { Card, CardFooter, Image } from "@heroui/react";
-import { BookmarkIcon, HeartIcon, MapPinIcon } from "lucide-react";
+import { BookmarkIcon, HeartIcon, MapPinIcon, Share2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
@@ -50,7 +50,7 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
   return (
     <Card
       isFooterBlurred
-      className="border-none w-[calc(100vw-2rem)] sm:w-[400px] mx-auto h-[450px] sm:h-[560px] group"
+      className="border-none w-[calc(100vw-2rem)] sm:w-[400px] mx-auto h-[450px] sm:h-[560px]  group"
       radius="lg"
     >
       <div
@@ -73,11 +73,18 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
           </h3>
         </div>
         <div className="absolute top-0 right-0 z-10 p-4 flex justify-between gap-2 w-full">
-          <div className="text-tiny text-white bg-[#EA7B26]/80  border-[#EA7B26]/20 border-1 shadow-small py-1 px-4 rounded-2xl">
+          <div className="text-tiny text-white bg-[#EA7B26]/80  border-white/20 border-1 shadow-small py-1 px-4 rounded-2xl">
             {capitalizeWords(post.city.name)}
           </div>
-          <div className="text-tiny text-white bg-[#EA7B26]/80  border-[#EA7B26]/20 border-1 shadow-small py-1 px-4 rounded-2xl">
-            {post._count?.postPlaces} Places
+          <div className="flex gap-2">
+            <div className="text-tiny text-white bg-[#EA7B26]/80  border-white/20 border-1 shadow-small py-1 px-4 rounded-2xl">
+              {post._count?.postPlaces} Places
+            </div>
+            {post.distanceKm && (
+              <div className="text-tiny text-white bg-[#EA7B26]/80  border-white/20 border-1 shadow-small py-1 px-4 rounded-2xl">
+                {post.distanceKm} km
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -144,6 +151,12 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
               >
                 {post.bookmarksCount}
               </span>
+            </div>
+            <div className="flex gap-1 items-center">
+              <Share2Icon
+                className={`w-5 h-5 cursor-pointer transition-all duration-200 ease-out hover:scale-110 text-white fill-white`}
+                onClick={handleBookmarkPost}
+              />
             </div>
           </div>
         </div>

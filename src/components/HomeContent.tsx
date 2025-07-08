@@ -1,85 +1,13 @@
 "use client";
 import CardItem from "@/components/CardItem";
 import CardItemSkeleton from "@/components/CardItemSkeleton";
-import { usePostBySlug, usePosts } from "@/hooks/useApi";
-import { AuthSession } from "@/lib/auth";
-import useUser from "@/store/useUser";
+import { usePosts } from "@/hooks/useApi";
 import { Button } from "@heroui/react";
 import { ChevronUpIcon, ChevronDownIcon } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useInView } from "react-intersection-observer";
 import { useRouter, useSearchParams } from "next/navigation";
-
-// Dummy data based on CardItem structure
-const dummyData = [
-  {
-    id: 1,
-    title: "Warung Sate Enak di Nologaten",
-    image:
-      "https://asset.kompas.com/crops/BJdOTeUCdwHWS6ImI9qDnf3s8nI=/0x0:1000x667/1200x800/data/photo/2023/12/19/6580e31d4d33e.jpeg",
-    places: 7,
-    author: {
-      name: "makanyuk",
-      avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-    },
-    location: "Yogyakarta",
-    spots: [
-      "Sate Madura",
-      "Sate Madura Pak Slamet",
-      "Sate Madura Bu Sri",
-      "Sate Madura Pak Joko",
-      "Sate Madura Bu Tini",
-      "Sate Madura Pak Budi",
-      "Sate Madura Bu Rani",
-    ],
-    likes: 100,
-    bookmarks: 100,
-  },
-  {
-    id: 2,
-    title: "Gudeg Paling Enak di Jogja",
-    image:
-      "https://assets.promediateknologi.id/crop/0x0:0x0/750x500/webp/photo/krjogja/news/2023/04/20/502403/update-harga-gudeg-jogja-untuk-wisatawan-lebaran-230420p.jpg",
-    places: 5,
-    author: {
-      name: "foodhunter",
-      avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d2",
-    },
-    location: "Yogyakarta",
-    spots: [
-      "Gudeg Yu Djum",
-      "Gudeg Permata Bu Narti",
-      "Gudeg Wijilan",
-      "Gudeg Mercon Bu Tinah",
-      "Gudeg Pawon",
-    ],
-    likes: 250,
-    bookmarks: 180,
-  },
-  {
-    id: 3,
-    title: "Angkringan Hits Jogja",
-    image:
-      "https://asset.kompas.com/crops/sH3j5mIjHkOkvWVKdGHYCUM6Sj4=/0x0:1000x667/1200x800/data/photo/2022/01/21/61eab5f30ff0f.jpg",
-    places: 6,
-    author: {
-      name: "jojofoodie",
-      avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d3",
-    },
-    location: "Yogyakarta",
-    spots: [
-      "Angkringan Kopi Joss",
-      "Angkringan Lik Man",
-      "Angkringan Tugu",
-      "Angkringan Wijilan",
-      "Angkringan Mergangsan",
-      "Angkringan UGM",
-    ],
-    likes: 180,
-    bookmarks: 120,
-  },
-];
 
 interface HomeContentProps {
   initialPage?: number;
@@ -280,7 +208,7 @@ export default function HomeContent({
                   ref={(el) => {
                     itemRefs.current[index] = el;
                   }}
-                  className="snap-start min-h-[calc(100vh-10rem)] flex items-center justify-center"
+                  className="snap-start min-h-[calc(100vh-20rem)] flex items-center justify-center"
                 >
                   <CardItem post={item} />
                 </div>
@@ -311,7 +239,7 @@ export default function HomeContent({
           // Show illustration when no posts
           <div className="flex flex-col items-center justify-center gap-4 p-8 text-center">
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="No posts found"
               width={300}
               height={300}

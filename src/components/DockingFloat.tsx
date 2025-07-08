@@ -1,6 +1,6 @@
 import { Post } from "@/types/api";
 import { Button, Card, CardBody } from "@heroui/react";
-import { Bookmark, Heart, Share } from "lucide-react";
+import { Bookmark, Heart, Share, Share2Icon } from "lucide-react";
 import React, { useState } from "react";
 import { useBookmarkPost, useLikePost } from "@/hooks/useApi";
 
@@ -16,8 +16,6 @@ const DockingFloat = ({ post }: DockingFloatProps) => {
   // Use the same mutation hooks as CardItem for consistency
   const { mutate: likePost } = useLikePost();
   const { mutate: bookmarkPost } = useBookmarkPost();
-
-  console.log("post:", post);
 
   const handleLikePost = () => {
     // Instagram-style like animation
@@ -122,7 +120,7 @@ const DockingFloat = ({ post }: DockingFloatProps) => {
                 });
               }}
             >
-              <Share className="w-4 h-4 text-gray-600 hover:text-green-600 transition-colors duration-200" />
+              <Share2Icon className="w-4 h-4 text-gray-600 hover:text-green-600 transition-colors duration-200" />
             </Button>
           </div>
         </CardBody>

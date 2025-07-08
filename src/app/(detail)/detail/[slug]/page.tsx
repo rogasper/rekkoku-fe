@@ -1,7 +1,11 @@
 import DetailContent from "@/components/DetailContent";
 import React from "react";
 
-const DetailPage = async ({ params }: { params: { slug: string } }) => {
+interface DetailPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+const DetailPage = async ({ params }: DetailPageProps) => {
   const { slug } = await params;
 
   return (

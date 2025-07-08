@@ -1,6 +1,7 @@
 "use client";
 import { getCookie } from "@/lib/cookies";
 import axios, { AxiosInstance } from "axios";
+import useUser from "@/store/useUser";
 
 // Get base URL - use different env vars for server vs client
 const getBaseURL = () => {
@@ -49,7 +50,7 @@ apiClient.interceptors.response.use(
       if (typeof window !== "undefined") {
         // Clear Zustand store
         try {
-          const { clearAuth } = require("@/store/useUser").default.getState();
+          const { clearAuth } = useUser.getState();
           clearAuth();
         } catch (e) {
           console.error("Failed to clear auth store:", e);

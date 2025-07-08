@@ -1,8 +1,7 @@
 "use client";
-import CardItem from "@/components/CardItem";
 import ProfileGridItem from "@/components/ProfileGridItem";
 import { Avatar, Button, Chip, Tab, Tabs } from "@heroui/react";
-import { Bookmark, Heart, Link, LinkIcon, Send } from "lucide-react";
+import { Bookmark, Heart, Send } from "lucide-react";
 import React, { useState } from "react";
 
 const page = () => {

@@ -151,11 +151,30 @@ export function usePosts(filters?: Record<string, any>) {
   });
 }
 
-export function useNearbyPosts(params: Record<string, any>) {
-  return useQuery({
-    queryKey: queryKeys.posts.nearby(params),
-    queryFn: () => apiClient.get(API_ENDPOINTS.POSTS.GET_NEARBY, params),
-    enabled: !!(params.lat && params.long),
+export function useNearbyPosts(
+  params: Record<string, any>,
+  options?: { enabled?: boolean }
+) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.posts.nearby(params || {}),
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.get(API_ENDPOINTS.POSTS.GET_NEARBY, {
+        params: {
+          ...params,
+          page: pageParam,
+        },
+      }),
+    enabled: options?.enabled ?? true,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: any, allPages) => {
+      const currentPage = lastPage.meta?.page || allPages.length;
+      const limit = lastPage.meta?.limit || 10;
+      const dataLength = lastPage.data?.length || 0;
+
+      const hasNextPage = dataLength >= limit;
+
+      return hasNextPage ? currentPage + 1 : undefined;
+    },
   });
 }
 

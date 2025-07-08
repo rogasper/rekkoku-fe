@@ -18,6 +18,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { AuthSession } from "@/lib/auth";
 import { useState } from "react";
 import LoginModal from "./LoginModal";
+import CreatePostModal from "./CreatePostModal";
 
 interface BottomNavigationProps {
   user: AuthSession | null;
@@ -133,32 +134,11 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
         onClose={() => setIsLoginModalOpen(false)}
       />
 
-      {/* Create Modal - Simple placeholder for now */}
-      <Modal
+      {/* Create Post Modal - now uses the full form */}
+      <CreatePostModal
         isOpen={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
-        backdrop="blur"
-        size="md"
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader>Create New Post</ModalHeader>
-              <ModalBody>
-                <p>Create post functionality will be implemented here.</p>
-                <p className="text-sm text-gray-500">
-                  For now, use the desktop floating button to create posts.
-                </p>
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="light" onPress={onClose}>
-                  Close
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      />
     </>
   );
 }

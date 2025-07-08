@@ -78,6 +78,7 @@ export interface Post {
   };
   isLiked?: boolean;
   isBookmarked?: boolean;
+  distanceKm?: number;
 }
 
 // Specific API response types
