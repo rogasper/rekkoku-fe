@@ -3,7 +3,7 @@
 import React from "react";
 import { Button, Divider, User, Image } from "@heroui/react";
 import ListCardItem from "@/components/ListCardItem";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, Lock } from "lucide-react";
 import DockingFloat from "./DockingFloat";
 import DetailContentSkeleton from "./DetailContentSkeleton";
 import { useBookmarkPost, useLikePost, usePostBySlug } from "@/hooks/useApi";
@@ -12,6 +12,7 @@ import type { Post, PostDetailResponse } from "@/types/api";
 import { capitalizeWords } from "@/utils/strings";
 import { formatRelativeTime } from "@/utils/dates";
 import { getDefaultPostImage } from "@/utils/ui";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DetailContentProps {
   slug: string;
@@ -20,6 +21,7 @@ interface DetailContentProps {
 const DetailContent = ({ slug }: DetailContentProps) => {
   const router = useRouter();
   const { data, isLoading } = usePostBySlug(slug);
+  const { user: currentUser, checkOwnership } = useAuth();
 
   if (isLoading) return <DetailContentSkeleton />;
 
@@ -29,12 +31,52 @@ const DetailContent = ({ slug }: DetailContentProps) => {
     return <div className="text-center py-8">Post not found</div>;
   }
 
+  // Access Control: Check if post is published or user is owner
+  const isPublished = postResponse.status === "PUBLISHED";
+  const isOwner = checkOwnership(postResponse.userId);
+
+  if (!isPublished && !isOwner) {
+    return (
+      <div className="text-center py-16 px-6">
+        <div className="max-w-md mx-auto">
+          <Lock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Content Not Available
+          </h2>
+          <p className="text-gray-500 mb-6">
+            This post is not published yet and cannot be accessed.
+          </p>
+          <Button
+            variant="bordered"
+            onPress={() => router.push("/")}
+            className="w-full sm:w-auto"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const handleBack = () => {
     router.back();
   };
 
   return (
     <>
+      {/* Draft Indicator - Only for owner viewing their draft */}
+      {!isPublished && isOwner && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 mx-6 md:mx-0">
+          <div className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-amber-600" />
+            <span className="text-amber-800 font-medium text-sm">
+              Draft Post - Only visible to you
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Header Image */}
       <div className="relative h-64 bg-gradient-to-r from-orange-200 to-amber-200 rounded-lg mb-6 overflow-hidden">
         <Image

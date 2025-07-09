@@ -68,6 +68,8 @@ const NearbyContent = ({
     setIsClient(true);
   }, []);
 
+  console.log("COORDS:", coords);
+
   // Prepare query parameters for posts API (excluding page - handled by infinite query)
   const queryParams = {
     lat: coords?.latitude || 0,

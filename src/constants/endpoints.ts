@@ -6,6 +6,7 @@ export const USERS_ENDPOINTS = {
   LOGIN: "/users/login",
   GET_ALL: "/users/",
   GET_BY_ID: (id: string) => `/users/${id}`,
+  GET_BY_USERNAME: (username: string) => `/users/username/${username}`,
   UPDATE: (id: string) => `/users/${id}`,
   DELETE: (id: string) => `/users/${id}`,
 } as const;
@@ -40,6 +41,10 @@ export const POSTS_ENDPOINTS = {
   UPDATE: (id: string) => `/posts/${id}`,
   UPDATE_STATUS: (id: string) => `/posts/${id}/status`,
   DELETE: (id: string) => `/posts/${id}`,
+  GET_USER_LIKED: (userId: string) => `/posts/user/${userId}/liked`,
+  GET_USER_BOOKMARKED: (userId: string) => `/posts/user/${userId}/bookmarked`,
+  GET_USER_STATS: (userId: string) => `/posts/user/${userId}/stats`,
+  GET_USER_POSTS: (userId: string) => `/posts/user/${userId}/posts`,
 } as const;
 
 // Cities endpoints

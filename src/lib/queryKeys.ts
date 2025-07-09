@@ -8,6 +8,10 @@ export const queryKeys = {
       [...queryKeys.users.lists(), { filters }] as const,
     details: () => [...queryKeys.users.all, "detail"] as const,
     detail: (id: string) => [...queryKeys.users.details(), id] as const,
+    byUsername: (username: string) =>
+      [...queryKeys.users.all, "username", username] as const,
+    stats: (userId: string) =>
+      [...queryKeys.users.all, "stats", userId] as const,
   },
 
   // Auth
@@ -40,6 +44,12 @@ export const queryKeys = {
       [...queryKeys.posts.all, "my-posts", { filters }] as const,
     bySlug: (slug: string) => [...queryKeys.posts.all, "slug", slug] as const,
     progress: (id: string) => [...queryKeys.posts.all, "progress", id] as const,
+    userLiked: (userId: string, filters: Record<string, any>) =>
+      [...queryKeys.posts.all, "user-liked", userId, { filters }] as const,
+    userBookmarked: (userId: string, filters: Record<string, any>) =>
+      [...queryKeys.posts.all, "user-bookmarked", userId, { filters }] as const,
+    userPosts: (userId: string, filters: Record<string, any>) =>
+      [...queryKeys.posts.all, "user-posts", userId, { filters }] as const,
   },
 
   // Cities

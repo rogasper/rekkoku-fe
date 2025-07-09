@@ -3,8 +3,9 @@ import { Card } from "@heroui/react";
 import { BookmarkIcon, HeartIcon, MapPinIcon } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+import { useRouter } from "next/navigation";
 
-type ContentType = "post" | "like" | "bookmark";
+type ContentType = "post" | "like" | "bookmark" | "draft";
 
 interface ProfileGridItemProps {
   title?: string;
@@ -14,6 +15,7 @@ interface ProfileGridItemProps {
   places?: number;
   type?: ContentType;
   location?: string;
+  slug?: string;
 }
 
 const ProfileGridItem: React.FC<ProfileGridItemProps> = ({
@@ -24,25 +26,54 @@ const ProfileGridItem: React.FC<ProfileGridItemProps> = ({
   places = 7,
   type = "post",
   location = "Yogyakarta",
+  slug,
 }) => {
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (slug) {
+      if (type === "draft") {
+        router.push(`/review/${slug}`);
+      } else {
+        router.push(`/detail/${slug}`);
+      }
+    }
+  };
+
   const getTypeIndicator = () => {
     switch (type) {
       case "like":
         return (
-          <div className="absolute top-2 right-2 bg-red-500/80 p-1.5 rounded-full z-20">
-            <HeartIcon className="w-3 h-3 text-white" fill="white" />
+          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-red-500/80 p-1 sm:p-1.5 rounded-full z-20 flex justify-center items-center">
+            <HeartIcon
+              className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white"
+              fill="white"
+            />
           </div>
         );
       case "bookmark":
         return (
-          <div className="absolute top-2 right-2 bg-blue-500/80 p-1.5 rounded-full z-20">
-            <BookmarkIcon className="w-3 h-3 text-white" fill="white" />
+          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-blue-500/80 p-1 sm:p-1.5 rounded-full z-20 flex justify-center items-center">
+            <BookmarkIcon
+              className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white"
+              fill="white"
+            />
           </div>
         );
       case "post":
         return (
-          <div className="absolute top-2 right-2 bg-[#EA7B26]/80 p-2 rounded-full z-20">
-            <span className="text-[10px] font-medium text-white">{places}</span>
+          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 border flex items-center justify-center border-white/50 bg-[#EA7B26]/80 p-0.5 px-2 sm:p-1 sm:px-4 rounded-full z-20">
+            <span className="text-[8px] sm:text-[10px] font-medium text-white">
+              {places} places
+            </span>
+          </div>
+        );
+      case "draft":
+        return (
+          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-orange-500/90 px-1.5 py-0.5 sm:px-4 sm:py-1 rounded-full z-20 flex justify-center items-center">
+            <span className="text-[8px] sm:text-[10px] font-medium text-white">
+              DRAFT
+            </span>
           </div>
         );
       default:
@@ -52,9 +83,10 @@ const ProfileGridItem: React.FC<ProfileGridItemProps> = ({
 
   return (
     <Card
-      isPressable
-      className="border-none w-full aspect-square group"
+      isPressable={!!slug}
+      className="border-none w-full aspect-square group cursor-pointer"
       radius="sm"
+      onPress={handleClick}
     >
       <div className="relative w-full h-full">
         <div className="absolute inset-0 overflow-hidden">
@@ -68,23 +100,32 @@ const ProfileGridItem: React.FC<ProfileGridItemProps> = ({
         </div>
         {getTypeIndicator()}
         <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/60 z-10">
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <h3 className="text-white text-sm font-medium line-clamp-2 mb-1">
+          <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3">
+            <h3 className="text-white text-xs sm:text-sm font-medium line-clamp-2 mb-1">
               {title}
             </h3>
             <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1">
-                <MapPinIcon className="w-3 h-3 text-white" />
-                <span className="text-white text-xs">{location}</span>
+              <div className="flex items-center gap-0.5 sm:gap-1">
+                <MapPinIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
+                <span className="text-white text-[10px] sm:text-xs truncate max-w-[50px] sm:max-w-none">
+                  {location}
+                </span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <HeartIcon className="w-3 h-3 text-white" fill="white" />
-                  <span className="text-white text-xs">{likes}</span>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-0.5 sm:gap-1">
+                  <HeartIcon
+                    className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white"
+                    fill="white"
+                  />
+                  <span className="text-white text-[10px] sm:text-xs">
+                    {likes}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <BookmarkIcon className="w-3 h-3 text-white" />
-                  <span className="text-white text-xs">{bookmarks}</span>
+                <div className="flex items-center gap-0.5 sm:gap-1">
+                  <BookmarkIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
+                  <span className="text-white text-[10px] sm:text-xs">
+                    {bookmarks}
+                  </span>
                 </div>
               </div>
             </div>

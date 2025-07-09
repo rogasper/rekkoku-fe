@@ -200,11 +200,26 @@ export function useMyPosts(filters?: Record<string, any>) {
   });
 }
 
-export function useProgressPost(id: string) {
+export function useMyDraftPosts(filters?: Record<string, any>) {
+  return useQuery({
+    queryKey: queryKeys.posts.myPosts({ ...filters, status: "DRAFT" }),
+    queryFn: () =>
+      apiClient.get(API_ENDPOINTS.POSTS.GET_MY_POSTS, {
+        params: {
+          ...filters,
+          status: "DRAFT",
+        },
+      }),
+  });
+}
+
+export function useProgressPost(id: string, shouldPoll: boolean = true) {
   return useQuery({
     queryKey: queryKeys.posts.progress(id),
     queryFn: () => apiClient.get(API_ENDPOINTS.POSTS.GET_PROGRESS(id)),
     enabled: !!id,
+    refetchInterval: shouldPoll ? 2000 : false, // Poll every 2 seconds when shouldPoll is true
+    refetchIntervalInBackground: false, // Don't poll when tab is not active
   });
 }
 
@@ -228,6 +243,14 @@ export function useUpdatePost(id: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.posts.lists() });
+      // Invalidate ALL bySlug queries (since we don't know the specific slug)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.posts.all,
+        predicate: (query) => {
+          // This will invalidate any query that starts with ["posts", "slug", ...]
+          return query.queryKey.includes("slug");
+        },
+      });
     },
   });
 }
@@ -478,5 +501,87 @@ export function useDeletePlace() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.places.all });
     },
+  });
+}
+
+// ===== USER PROFILE HOOKS =====
+export function useUserByUsername(username: string) {
+  return useQuery({
+    queryKey: queryKeys.users.byUsername(username),
+    queryFn: () => apiClient.get(API_ENDPOINTS.USERS.GET_BY_USERNAME(username)),
+    enabled: !!username,
+  });
+}
+
+export function useUserLikedPosts(
+  userId: string,
+  filters?: Record<string, any>
+) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.posts.userLiked(userId, filters || {}),
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.get(API_ENDPOINTS.POSTS.GET_USER_LIKED(userId), {
+        params: {
+          ...filters,
+          page: pageParam,
+        },
+      }),
+    enabled: !!userId,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: any, allPages) => {
+      const currentPage = lastPage.meta?.page || allPages.length;
+      const limit = lastPage.meta?.limit || 20;
+      const dataLength = lastPage.data?.length || 0;
+
+      const hasNextPage = dataLength >= limit;
+
+      return hasNextPage ? currentPage + 1 : undefined;
+    },
+  });
+}
+
+export function useUserBookmarkedPosts(
+  userId: string,
+  filters?: Record<string, any>
+) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.posts.userBookmarked(userId, filters || {}),
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.get(API_ENDPOINTS.POSTS.GET_USER_BOOKMARKED(userId), {
+        params: {
+          ...filters,
+          page: pageParam,
+        },
+      }),
+    enabled: !!userId,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: any, allPages) => {
+      const currentPage = lastPage.meta?.page || allPages.length;
+      const limit = lastPage.meta?.limit || 20;
+      const dataLength = lastPage.data?.length || 0;
+
+      const hasNextPage = dataLength >= limit;
+
+      return hasNextPage ? currentPage + 1 : undefined;
+    },
+  });
+}
+
+export function useUserStats(userId: string) {
+  return useQuery({
+    queryKey: queryKeys.users.stats(userId),
+    queryFn: () => apiClient.get(API_ENDPOINTS.POSTS.GET_USER_STATS(userId)),
+    enabled: !!userId,
+  });
+}
+
+export function useUserPosts(userId: string, filters?: Record<string, any>) {
+  return useQuery({
+    queryKey: queryKeys.posts.userPosts(userId, filters || {}),
+    queryFn: () =>
+      apiClient.get(API_ENDPOINTS.POSTS.GET_USER_POSTS(userId), {
+        params: filters,
+      }),
+    enabled: !!userId,
   });
 }
