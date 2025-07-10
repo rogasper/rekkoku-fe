@@ -8,6 +8,7 @@ export const USERS_ENDPOINTS = {
   GET_BY_ID: (id: string) => `/users/${id}`,
   GET_BY_USERNAME: (username: string) => `/users/username/${username}`,
   UPDATE: (id: string) => `/users/${id}`,
+  UPDATE_MY_PROFILE: "/users/me/profile",
   DELETE: (id: string) => `/users/${id}`,
 } as const;
 
@@ -83,6 +84,14 @@ export const PLACES_ENDPOINTS = {
   DELETE: (id: string) => `/places/${id}`,
 } as const;
 
+// Analytics endpoints
+export const ANALYTICS_ENDPOINTS = {
+  TOP_USERS: "/analytics/top-users",
+  TOP_POSTS: "/analytics/top-posts",
+  TOP_CITIES: "/analytics/top-cities",
+  OVERVIEW: "/analytics/overview",
+} as const;
+
 // All endpoints combined
 export const API_ENDPOINTS = {
   USERS: USERS_ENDPOINTS,
@@ -92,4 +101,5 @@ export const API_ENDPOINTS = {
   CITIES: CITIES_ENDPOINTS,
   USER_DETAILS: USER_DETAILS_ENDPOINTS,
   PLACES: PLACES_ENDPOINTS,
+  ANALYTICS: ANALYTICS_ENDPOINTS,
 } as const;

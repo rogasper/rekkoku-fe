@@ -93,4 +93,16 @@ export const queryKeys = {
     nearby: (params: Record<string, any>) =>
       [...queryKeys.places.all, "nearby", params] as const,
   },
+
+  // Analytics
+  analytics: {
+    all: ["analytics"] as const,
+    topUsers: (limit?: number) =>
+      [...queryKeys.analytics.all, "top-users", { limit }] as const,
+    topPosts: (limit?: number) =>
+      [...queryKeys.analytics.all, "top-posts", { limit }] as const,
+    topCities: (limit?: number) =>
+      [...queryKeys.analytics.all, "top-cities", { limit }] as const,
+    overview: () => [...queryKeys.analytics.all, "overview"] as const,
+  },
 } as const;

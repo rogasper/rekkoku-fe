@@ -17,8 +17,8 @@ const ListCardItem = ({ place, postId }: ListCardItemProps) => {
     >
       <CardBody className="p-0">
         <div className="flex flex-col sm:flex-row">
-          {/* Left column - Image */}
-          <div className="w-full sm:w-1/3 sm:h-auto">
+          {/* Image */}
+          <div className="w-full sm:w-2/5 h-48 sm:h-auto">
             <Image
               src={place.image}
               alt={place.title}
@@ -28,38 +28,38 @@ const ListCardItem = ({ place, postId }: ListCardItemProps) => {
             />
           </div>
 
-          {/* Right column - Content */}
-          <div className="w-full sm:w-2/3 p-4 sm:p-10">
-            <div className="h-full flex flex-col justify-between gap-4">
-              <div>
+          {/* Content */}
+          <div className="w-full sm:w-3/5 p-4 sm:p-6">
+            <div className="h-full flex flex-col justify-between gap-3 sm:gap-4">
+              <div className="space-y-3">
                 {/* Title */}
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 line-clamp-2 leading-tight">
                   {place.title.split("·")[0]}
                 </h3>
 
                 {/* Address */}
-                <div className="flex items-start text-gray-600 mb-2 sm:mb-4">
+                <div className="flex items-start text-gray-600">
                   <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">
+                  <span className="text-sm leading-relaxed">
                     {place.title.split("·")[1]}
                   </span>
                 </div>
 
                 {/* Description */}
-                <p className="text-xs sm:text-sm text-gray-700 mb-4 line-clamp-3">
+                <p className="text-sm text-gray-700 line-clamp-3 leading-relaxed">
                   {place.description}
                 </p>
               </div>
 
               {/* Google Maps Link */}
-              <div className="mt-auto">
+              <div className="mt-auto pt-3">
                 <Button
                   variant="bordered"
                   size="sm"
                   onPress={() => window.open(place.gmapsLink, "_blank")}
-                  className="w-full text-xs sm:text-sm md:w-1/2"
+                  className="w-full sm:w-auto text-sm"
                 >
-                  <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <ExternalLink className="w-4 h-4 mr-2" />
                   Open in Google Maps
                 </Button>
               </div>

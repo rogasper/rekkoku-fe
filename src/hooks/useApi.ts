@@ -76,6 +76,19 @@ export function useUpdateUser(id: string) {
   });
 }
 
+export function useUpdateMyProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: any) =>
+      apiClient.put(API_ENDPOINTS.USERS.UPDATE_MY_PROFILE, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.profile() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userDetails.me() });
+    },
+  });
+}
+
 export function useDeleteUser() {
   const queryClient = useQueryClient();
 
@@ -234,23 +247,29 @@ export function useCreatePost() {
   });
 }
 
-export function useUpdatePost(id: string) {
+export function useUpdatePost(
+  id: string,
+  options?: { autoInvalidate?: boolean }
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: any) =>
       apiClient.put(API_ENDPOINTS.POSTS.UPDATE(id), data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.lists() });
-      // Invalidate ALL bySlug queries (since we don't know the specific slug)
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.posts.all,
-        predicate: (query) => {
-          // This will invalidate any query that starts with ["posts", "slug", ...]
-          return query.queryKey.includes("slug");
-        },
-      });
+      // Only invalidate if autoInvalidate is true (default behavior for backward compatibility)
+      if (options?.autoInvalidate !== false) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.posts.lists() });
+        // Invalidate ALL bySlug queries (since we don't know the specific slug)
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.posts.all,
+          predicate: (query) => {
+            // This will invalidate any query that starts with ["posts", "slug", ...]
+            return query.queryKey.includes("slug");
+          },
+        });
+      }
     },
   });
 }
@@ -583,5 +602,47 @@ export function useUserPosts(userId: string, filters?: Record<string, any>) {
         params: filters,
       }),
     enabled: !!userId,
+  });
+}
+
+// ===== ANALYTICS HOOKS =====
+export function useTopUsers(limit?: number) {
+  return useQuery({
+    queryKey: queryKeys.analytics.topUsers(limit),
+    queryFn: () =>
+      apiClient.get(API_ENDPOINTS.ANALYTICS.TOP_USERS, {
+        params: { limit },
+      }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useTopPosts(limit?: number) {
+  return useQuery({
+    queryKey: queryKeys.analytics.topPosts(limit),
+    queryFn: () =>
+      apiClient.get(API_ENDPOINTS.ANALYTICS.TOP_POSTS, {
+        params: { limit },
+      }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useTopCities(limit?: number) {
+  return useQuery({
+    queryKey: queryKeys.analytics.topCities(limit),
+    queryFn: () =>
+      apiClient.get(API_ENDPOINTS.ANALYTICS.TOP_CITIES, {
+        params: { limit },
+      }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useAnalyticsOverview() {
+  return useQuery({
+    queryKey: queryKeys.analytics.overview(),
+    queryFn: () => apiClient.get(API_ENDPOINTS.ANALYTICS.OVERVIEW),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

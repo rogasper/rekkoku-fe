@@ -22,7 +22,7 @@ const TabsNavbar: React.FC<TabsNavbarProps> = ({
         variant="bordered"
         classNames={{
           cursor: "w-full bg-[#EA7B26]",
-          tabContent: "group-data-[selected=true]:text-white",
+          tabContent: "group-data-[selected=true]:text-white dark:text-white",
         }}
         fullWidth
         size="lg"
