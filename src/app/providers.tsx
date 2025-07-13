@@ -9,10 +9,6 @@ import ClientAuthProvider from "@/components/ClientAuthProvider";
 import GlobalAuthProvider from "@/components/GlobalAuthProvider";
 import { AuthSession } from "@/lib/auth";
 import { useEffect } from "react";
-import {
-  monitorPreloadedResources,
-  optimizeFontDisplay,
-} from "@/utils/resource-monitor";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -28,12 +24,44 @@ export function Providers({
   const queryClient = getQueryClient();
 
   useEffect(() => {
-    // Monitor preloaded resources in development
-    if (process.env.NODE_ENV === "development") {
-      monitorPreloadedResources();
-    }
-    // Optimize font display
-    optimizeFontDisplay();
+    // Dynamic import to prevent preload warnings
+    const initializeResourceMonitoring = async () => {
+      try {
+        const { monitorPreloadedResources, optimizeFontDisplay } = await import(
+          "@/utils/resource-monitor"
+        );
+
+        // Optimize font display immediately
+        optimizeFontDisplay();
+
+        // Monitor preloaded resources in development
+        let cleanup: (() => void) | undefined;
+        if (process.env.NODE_ENV === "development") {
+          cleanup = monitorPreloadedResources();
+        }
+
+        // Return cleanup function
+        return cleanup;
+      } catch (error) {
+        // Silently fail in production
+        if (process.env.NODE_ENV === "development") {
+          console.warn("Failed to load resource monitor:", error);
+        }
+      }
+    };
+
+    let cleanupRef: (() => void) | undefined;
+
+    initializeResourceMonitoring().then((cleanup) => {
+      cleanupRef = cleanup;
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (cleanupRef) {
+        cleanupRef();
+      }
+    };
   }, []);
 
   return (

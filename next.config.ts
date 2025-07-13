@@ -19,9 +19,33 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["@heroui/react"],
+    // Reduce preload warnings by optimizing module loading
+    optimizeServerReact: true,
   },
   // Optimize font loading
   optimizeFonts: true,
+  // Improve resource preloading
+  webpack: (config, { dev, isServer }) => {
+    // Only apply in development to prevent preload warnings
+    if (dev && !isServer) {
+      // Disable module preloading for development utilities
+      config.optimization.splitChunks = {
+        ...config.optimization.splitChunks,
+        cacheGroups: {
+          ...config.optimization.splitChunks?.cacheGroups,
+          // Prevent preloading of development-only utilities
+          devUtils: {
+            test: /[\\/]utils[\\/](resource-monitor|debug)/,
+            name: "dev-utils",
+            chunks: "all",
+            priority: 10,
+            reuseExistingChunk: true,
+          },
+        },
+      };
+    }
+    return config;
+  },
   // Disable automatic static optimization if causing preload issues
   typescript: {
     ignoreBuildErrors: false,
