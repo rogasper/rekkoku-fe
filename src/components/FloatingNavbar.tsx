@@ -31,18 +31,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 
-interface FloatingNavbarProps {
-  user: AuthSession | null;
-}
+// interface FloatingNavbarProps {
+//   user: AuthSession | null;
+// }
 
-export default function FloatingNavbar({ user }: FloatingNavbarProps) {
-  const setUser = useUser((state) => state.setUser);
+export default function FloatingNavbar() {
+  const user = useUser((state) => state.user);
   const queryClient = useQueryClient();
   const { openLoginModal } = useAuthModal();
-
-  useEffect(() => {
-    setUser(user);
-  }, [user, setUser]);
 
   const router = useRouter();
 

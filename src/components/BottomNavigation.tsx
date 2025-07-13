@@ -15,21 +15,17 @@ import {
   UserIcon,
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
-import { AuthSession } from "@/lib/auth";
 import { useState } from "react";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import CreatePostModal from "./CreatePostModal";
+import useUser from "@/store/useUser";
 
-interface BottomNavigationProps {
-  user: AuthSession | null;
-}
-
-export default function BottomNavigation({ user }: BottomNavigationProps) {
+export default function BottomNavigation() {
   const router = useRouter();
   const pathname = usePathname();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { openLoginModal } = useAuthModal();
-
+  const user = useUser((state) => state.user);
   const handleNavigation = (
     path: string,
     requiresAuth: boolean = false,

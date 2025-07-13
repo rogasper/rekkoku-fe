@@ -31,6 +31,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const token = await getCookie("session");
   const { slug: username } = await params;
   const user = await getUserByUsername(username, token || "");
+  console.log("user:", user);
+
   const isOwnProfile = await checkOwnership(user.data.id);
 
   await queryClient.prefetchQuery({
