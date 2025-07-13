@@ -8,12 +8,12 @@ export default async function DetailLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { user } = await verifySession();
+  await verifySession();
   return (
     <>
-      <FloatingNavbar user={user} />
+      <FloatingNavbar />
       {children}
-      <BottomNavigation user={user} />
+      <BottomNavigation />
       <Footer />
     </>
   );

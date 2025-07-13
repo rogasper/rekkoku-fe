@@ -11,14 +11,14 @@ export default async function MainLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { user } = await verifySession();
+  await verifySession();
   return (
     <>
-      <FloatingNavbar user={user} />
+      <FloatingNavbar />
       <TabsNavbar className="max-w-[1024px] sm:mt-4 mt-1 mx-auto px-4 sm:px-0" />
       {children}
       <FloatingCreateButton />
-      <BottomNavigation user={user} />
+      <BottomNavigation />
       <Footer />
     </>
   );
