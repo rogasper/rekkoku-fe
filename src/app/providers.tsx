@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { getQueryClient } from "./get-query-client";
 import { ToastProvider } from "@heroui/react";
 import ClientAuthProvider from "@/components/ClientAuthProvider";
+import GlobalAuthProvider from "@/components/GlobalAuthProvider";
 import { AuthSession } from "@/lib/auth";
 import { useEffect } from "react";
 import {
@@ -42,9 +43,11 @@ export function Providers({
           initialSession={initialSession}
           initialToken={initialToken}
         >
-          <ToastProvider />
-          {children}
-          <ReactQueryDevtools />
+          <GlobalAuthProvider>
+            <ToastProvider />
+            {children}
+            <ReactQueryDevtools />
+          </GlobalAuthProvider>
         </ClientAuthProvider>
       </HeroUIProvider>
     </QueryClientProvider>

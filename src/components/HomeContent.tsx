@@ -112,6 +112,7 @@ export default function HomeContent({
     }
   }, [
     initialPage,
+    posts,
     posts?.pages?.length,
     hasNextPage,
     isFetchingNextPage,

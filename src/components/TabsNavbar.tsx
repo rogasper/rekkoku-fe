@@ -1,6 +1,6 @@
 "use client";
 import { Tabs, Tab } from "@heroui/react";
-import { MapPinIcon, TrendingUpIcon, UtensilsCrossedIcon } from "lucide-react";
+import { MapPinHouseIcon, MapPinIcon, TrendingUpIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 type TabsNavbarProps = React.HTMLAttributes<HTMLDivElement>;
@@ -15,49 +15,56 @@ const TabsNavbar: React.FC<TabsNavbarProps> = ({
     router.push(key as string);
   };
   return (
-    <div className={`${className}`} {...props}>
-      <Tabs
-        aria-label="Options"
-        color="warning"
-        variant="bordered"
-        classNames={{
-          cursor: "w-full bg-[#EA7B26]",
-          tabContent: "group-data-[selected=true]:text-white dark:text-white",
-        }}
-        fullWidth
-        size="lg"
-        selectedKey={pathname}
-        onSelectionChange={handleSelectionChange}
-      >
-        <Tab
-          key="/"
-          title={
-            <div className="flex items-center space-x-2">
-              <UtensilsCrossedIcon />
-              <span>Feed</span>
-            </div>
-          }
-        />
-        <Tab
-          key="/nearby"
-          title={
-            <div className="flex items-center space-x-2">
-              <MapPinIcon />
-              <span>Nearby</span>
-            </div>
-          }
-        />
-        <Tab
-          key="/top-places"
-          title={
-            <div className="flex items-center space-x-2">
-              <TrendingUpIcon />
-              <span>Top Places</span>
-            </div>
-          }
-        />
-      </Tabs>
-    </div>
+    <>
+      {pathname !== "/search" && (
+        <div
+          className={`${className}  backdrop-blur-sm shadow-lg border-b rounded-xl border-gray-200/50 sticky top-0 z-30`}
+          {...props}
+        >
+          <Tabs
+            aria-label="Options"
+            color="warning"
+            variant="bordered"
+            classNames={{
+              cursor: "w-full bg-[#EA7B26]",
+              tabContent: "group-data-[selected=true]:text-white",
+            }}
+            fullWidth
+            size="lg"
+            selectedKey={pathname}
+            onSelectionChange={handleSelectionChange}
+          >
+            <Tab
+              key="/"
+              title={
+                <div className="flex items-center space-x-2">
+                  <MapPinHouseIcon />
+                  <span className="text-sm sm:text-base">Feed</span>
+                </div>
+              }
+            />
+            <Tab
+              key="/nearby"
+              title={
+                <div className="flex items-center space-x-2">
+                  <MapPinIcon />
+                  <span className="text-sm sm:text-base">Nearby</span>
+                </div>
+              }
+            />
+            <Tab
+              key="/top-places"
+              title={
+                <div className="flex items-center space-x-2">
+                  <TrendingUpIcon />
+                  <span className="text-sm sm:text-base">Top Places</span>
+                </div>
+              }
+            />
+          </Tabs>
+        </div>
+      )}
+    </>
   );
 };
 

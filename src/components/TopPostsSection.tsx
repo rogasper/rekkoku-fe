@@ -1,6 +1,6 @@
 "use client";
 import { useTopPosts } from "@/hooks/useApi";
-import { Avatar, Card, CardBody, Chip, Skeleton } from "@heroui/react";
+import { Avatar, Card, CardBody, Chip, Skeleton, Tooltip } from "@heroui/react";
 import {
   TrendingUp,
   Heart,
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { capitalizeWords } from "@/utils";
 
 interface TopPost {
   id: string;
@@ -139,7 +140,7 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                 </div>
 
                 {/* Thumbnail */}
-                <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                <div className="relative w-24 h-24 sm:w-50 sm:h-50 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                   {post.thumbnail ? (
                     <Image
                       src={post.thumbnail}
@@ -149,7 +150,7 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <MapPin className="w-8 h-8" />
+                      <MapPin className="w-5 h-5 sm:w-10 sm:h-10" />
                     </div>
                   )}
                 </div>
@@ -157,9 +158,11 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm sm:text-base">
-                      {post.title}
-                    </h3>
+                    <Tooltip content={post.title} placement="top">
+                      <h3 className="font-semibold text-gray-900 line-clamp-1 text-sm sm:text-lg">
+                        {post.title}
+                      </h3>
+                    </Tooltip>
                     {post.rank <= 3 && (
                       <Chip
                         size="sm"
@@ -178,9 +181,10 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                       src={post.author.avatar || undefined}
                       name={post.author.name}
                       size="sm"
+                      className="w-5 h-5 sm:w-8 sm:h-8"
                     />
-                    <span className="text-sm text-gray-600 truncate">
-                      {post.author.name}
+                    <span className="text-xs sm:text-medium text-gray-600 truncate">
+                      {post.author.username}
                     </span>
                   </div>
 
@@ -188,8 +192,8 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                   {post.city && (
                     <div className="flex items-center gap-1 mb-2">
                       <MapPin className="w-3 h-3 text-gray-400" />
-                      <span className="text-xs text-gray-500">
-                        {post.city.name}
+                      <span className="text-tiny sm:text-sm text-gray-500">
+                        {capitalizeWords(post.city.name)}
                       </span>
                     </div>
                   )}

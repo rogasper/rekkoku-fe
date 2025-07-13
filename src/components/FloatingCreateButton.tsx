@@ -7,6 +7,7 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
+  addToast,
 } from "@heroui/react";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { Input } from "@heroui/input";
@@ -18,8 +19,10 @@ import { useState } from "react";
 import { useCities, useCreatePost } from "@/hooks/useApi";
 import { City } from "@/types/api";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { UI_CONSTANTS, POST_STATUS, DEFAULTS } from "@/utils/constants";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { useAuth } from "@/hooks/useAuth";
 
 // Helper function to validate Google Maps links
 const isValidGmapsLink = (url: string): boolean => {
@@ -54,10 +57,14 @@ const createPostSchema = z.object({
 export default function FloatingCreateButton() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [gmapsUrls, setGmapsUrls] = useState<string[]>([""]);
+  const { withAuth } = useAuthGuard();
+  const { isAuthenticated } = useAuth();
   // search debounce
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const router = useRouter();
+  const pathname = usePathname();
+  const accessList = ["/", "/nearby", "/top-places"];
 
   const {
     register,
@@ -99,14 +106,27 @@ export default function FloatingCreateButton() {
       console.log("Creating post:", submitData);
       await createPost(submitData, {
         onSuccess: (response) => {
+          addToast({
+            title: "Post created",
+            description: "Your post has been created",
+            color: "success",
+          });
           reset();
           setGmapsUrls([""]);
           onOpenChange();
+
           // Redirect to review page with the post slug
           const postSlug = response?.data?.slug;
           if (postSlug) {
             router.push(`/review/${postSlug}`);
           }
+        },
+        onError: (error) => {
+          addToast({
+            title: "Error",
+            description: error.message,
+            color: "danger",
+          });
         },
       });
     } catch (error) {
@@ -134,15 +154,21 @@ export default function FloatingCreateButton() {
   return (
     <>
       {/* Floating Create Button - Desktop Only */}
-      <Button
-        isIconOnly
-        className="fixed bottom-6 right-6 z-50 bg-[#EA7B26] text-white shadow-lg hover:bg-[#EA7B26]/90 hidden lg:flex w-[82px] h-[82px]"
-        radius="full"
-        onPress={onOpen}
-        aria-label="Create new post"
-      >
-        <PlusIcon size={32} />
-      </Button>
+      {accessList.includes(pathname) && isAuthenticated && (
+        <Button
+          isIconOnly
+          className="fixed bottom-6 right-6 z-50 bg-[#EA7B26] text-white shadow-lg hover:bg-[#EA7B26]/90 hidden lg:flex w-[82px] h-[82px]"
+          radius="full"
+          onPress={() => {
+            withAuth(() => {
+              onOpen();
+            });
+          }}
+          aria-label="Create new post"
+        >
+          <PlusIcon size={32} />
+        </Button>
+      )}
 
       {/* Create Post Modal */}
       <Modal

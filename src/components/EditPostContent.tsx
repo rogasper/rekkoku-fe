@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Card, CardBody, Input, Image } from "@heroui/react";
+import { Button, Card, CardBody, Input, Image, addToast } from "@heroui/react";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { ArrowLeft, Save, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,13 +9,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
 import { useCities, useUpdatePost } from "@/hooks/useApi";
 import type { Post, City } from "@/types/api";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getDefaultPostImage } from "@/utils/ui";
 import { UI_CONSTANTS, DEFAULTS } from "@/utils/constants";
-import apiClient from "@/utils/api";
+// import apiClient from "@/utils/api";
+import { updatePostAction } from "@/actions/action";
 
 // Helper function to validate Google Maps links
 const isValidGmapsLink = (url: string): boolean => {
@@ -47,15 +47,13 @@ const editPostSchema = z.object({
 
 interface EditPostContentProps {
   slug: string;
+  post: Post;
 }
 
-const EditPostContent = ({ slug }: EditPostContentProps) => {
+const EditPostContent = ({ slug, post }: EditPostContentProps) => {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const isSubmittingRef = useRef(false);
-
-  const [postResponse, setPostResponse] = useState<Post | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const [gmapsUrls, setGmapsUrls] = useState<string[]>([]);
@@ -71,7 +69,7 @@ const EditPostContent = ({ slug }: EditPostContentProps) => {
   const citiesData = cities?.data as City[];
 
   // Update post mutation (disable auto-invalidation to prevent DOM errors)
-  const updatePostMutation = useUpdatePost(postResponse?.id || "", {
+  const updatePostMutation = useUpdatePost(post?.id || "", {
     autoInvalidate: false,
   });
 
@@ -94,52 +92,18 @@ const EditPostContent = ({ slug }: EditPostContentProps) => {
 
   const selectedCityId = watch("cityId");
 
-  // Load post data on mount
-  useEffect(() => {
-    const loadPostData = async () => {
-      try {
-        // First try localStorage
-        const storedData = localStorage.getItem("editPostData");
-        if (storedData) {
-          try {
-            const parsedData = JSON.parse(storedData);
-            const isRecent = Date.now() - parsedData.timestamp < 5 * 60 * 1000; // 5 minutes
-            if (parsedData.post && isRecent) {
-              setPostResponse(parsedData.post);
-              setIsLoading(false);
-              return; // Don't remove, let it expire naturally
-            }
-          } catch (error) {
-            console.error("Error parsing stored data:", error);
-          }
-          // Only remove if expired or invalid
-          if (storedData) {
-            localStorage.removeItem("editPostData");
-          }
-        }
-      } catch (error) {
-        console.error("Error loading post data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadPostData();
-  }, [slug]);
-
   // Initialize form when post data is available
   useEffect(() => {
-    if (postResponse) {
+    if (post) {
       reset({
-        title: postResponse.title,
-        cityId: postResponse.cityId,
+        title: post.title,
+        cityId: post.cityId,
         gmapsLinks: [],
       });
-      setSearch(postResponse.city?.name || "");
+      setSearch(post.city?.name || "");
 
       // Initialize existing places for management
-      const places =
-        postResponse.postPlaces?.sort((a, b) => a.order - b.order) || [];
+      const places = post.postPlaces?.sort((a, b) => a.order - b.order) || [];
       setExistingPlaces(places);
 
       // Get current gmaps links from existing places
@@ -147,7 +111,7 @@ const EditPostContent = ({ slug }: EditPostContentProps) => {
       setGmapsUrls(existingLinks);
       setValue("gmapsLinks", existingLinks);
     }
-  }, [postResponse, reset, setValue]);
+  }, [post, reset, setValue]);
 
   const handleBack = () => {
     router.push(`/review/${slug}`);
@@ -161,12 +125,6 @@ const EditPostContent = ({ slug }: EditPostContentProps) => {
     isSubmittingRef.current = true;
 
     try {
-      // Clear React Query cache to prevent conflicts
-      queryClient.clear();
-
-      // Small delay to allow DOM to stabilize
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
       // Use direct API call to avoid any React Query state changes
       const allLinks = gmapsUrls.filter((url) => url.trim() !== "");
 
@@ -177,13 +135,28 @@ const EditPostContent = ({ slug }: EditPostContentProps) => {
       };
 
       // Direct API call without mutation to avoid state updates
-      await apiClient.put(`/posts/${postResponse?.id}`, submitData);
-
-      // Clean up localStorage after successful update
-      localStorage.removeItem("editPostData");
-
-      // Immediate redirect without delay to prevent any further renders
-      window.location.href = `/review/${slug}`;
+      // await apiClient.put(`/posts/${postResponse?.id}`, submitData);
+      updatePostMutation.mutate(submitData, {
+        onSuccess: async () => {
+          addToast({
+            title: "Post updated",
+            description: "Redirecting to review page...",
+            color: "success",
+          });
+          // localStorage.removeItem("editPostData");
+          updatePostAction(slug);
+          // setTimeout(() => {
+          //   updatePostAction(slug);
+          // }, 2000);
+        },
+        onError: (error) => {
+          addToast({
+            title: "Error",
+            description: error.message,
+            color: "danger",
+          });
+        },
+      });
     } catch (error) {
       console.error("Error updating post:", error);
       isSubmittingRef.current = false; // Reset on error
@@ -252,15 +225,15 @@ const EditPostContent = ({ slug }: EditPostContentProps) => {
     setGmapsUrls([...newUrls, ...gmapsUrls.slice(existingPlaces.length)]);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center py-12">
+  //       <Loader2 className="w-8 h-8 animate-spin" />
+  //     </div>
+  //   );
+  // }
 
-  if (!postResponse) {
+  if (!post) {
     return <div className="text-center py-8">Post not found</div>;
   }
 
@@ -269,10 +242,8 @@ const EditPostContent = ({ slug }: EditPostContentProps) => {
       {/* Header */}
       <div className="relative h-48 bg-gradient-to-r from-orange-200 to-amber-200 rounded-lg overflow-hidden">
         <Image
-          src={
-            postResponse.postPlaces[0]?.place?.image || getDefaultPostImage()
-          }
-          alt={postResponse.title}
+          src={post.postPlaces[0]?.place?.image || getDefaultPostImage()}
+          alt={post.title}
           width={1000}
           height={667}
           className="w-full h-full object-cover absolute top-0 left-0"
@@ -290,7 +261,7 @@ const EditPostContent = ({ slug }: EditPostContentProps) => {
         <div className="absolute inset-0 bg-black/30 z-10 w-full h-full" />
         <div className="absolute bottom-6 left-6 right-6 z-20">
           <h1 className="text-2xl font-bold text-white mb-2">
-            Edit Post: {postResponse.title}
+            Edit Post: {post.title}
           </h1>
         </div>
       </div>

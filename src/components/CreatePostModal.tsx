@@ -6,6 +6,7 @@ import {
   ModalBody,
   ModalFooter,
   Button,
+  addToast,
 } from "@heroui/react";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { Input } from "@heroui/input";
@@ -94,6 +95,11 @@ export default function CreatePostModal({
       };
       await createPost(submitData, {
         onSuccess: (response) => {
+          addToast({
+            title: "Post created",
+            description: "Your post has been created",
+            color: "success",
+          });
           reset();
           setGmapsUrls([""]);
           onOpenChange(false);
@@ -103,6 +109,13 @@ export default function CreatePostModal({
           } else if (postSlug) {
             router.push(`/review/${postSlug}`);
           }
+        },
+        onError: (error) => {
+          addToast({
+            title: "Error",
+            description: error.message,
+            color: "danger",
+          });
         },
       });
     } catch (error) {

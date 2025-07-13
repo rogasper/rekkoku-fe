@@ -3,7 +3,7 @@
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { decrypt } from "./cookies";
+import { decrypt, deleteCookie } from "./cookies";
 import { Role } from "@/constants/enums";
 
 // Types for authentication
@@ -61,6 +61,7 @@ export async function requireAuth(): Promise<AuthSession> {
   const { isAuthenticated, user } = await verifySession();
 
   if (!isAuthenticated || !user) {
+    await deleteCookie("session");
     redirect("/login");
   }
 

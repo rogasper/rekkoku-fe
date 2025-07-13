@@ -6,6 +6,7 @@ import { Card, CardFooter, Image } from "@heroui/react";
 import { BookmarkIcon, HeartIcon, MapPinIcon, Share2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 interface CardItemProps {
   post: Post;
@@ -19,32 +20,37 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
 
   const { mutate: likePost } = useLikePost();
   const { mutate: bookmarkPost } = useBookmarkPost();
+  const { withAuth } = useAuthGuard();
 
   const handleLikePost = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    // Instagram-style like animation
-    setIsLikeAnimating(true);
+    withAuth(() => {
+      // Instagram-style like animation
+      setIsLikeAnimating(true);
 
-    // Show floating heart effect
-    if (!post.isLiked) {
-      setShowFloatingHeart(true);
-      setTimeout(() => setShowFloatingHeart(false), 1000);
-    }
+      // Show floating heart effect
+      if (!post.isLiked) {
+        setShowFloatingHeart(true);
+        setTimeout(() => setShowFloatingHeart(false), 1000);
+      }
 
-    setTimeout(() => setIsLikeAnimating(false), 400);
+      setTimeout(() => setIsLikeAnimating(false), 400);
 
-    likePost(post.id);
+      likePost(post.id);
+    });
   };
 
   const handleBookmarkPost = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    // Simple bookmark animation
-    setIsBookmarkAnimating(true);
-    setTimeout(() => setIsBookmarkAnimating(false), 300);
+    withAuth(() => {
+      // Simple bookmark animation
+      setIsBookmarkAnimating(true);
+      setTimeout(() => setIsBookmarkAnimating(false), 300);
 
-    bookmarkPost(post.id);
+      bookmarkPost(post.id);
+    });
   };
 
   return (
@@ -92,7 +98,11 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
         <div className="flex pb-2 gap-2 w-full justify-between">
           <div
             className="text-tiny text-white bg-[#EA7B26]/80 border-white/30 border-1 backdrop-blur-sm shadow-small flex items-center gap-2 py-1 p-2 rounded-2xl cursor-pointer w-fit"
-            onClick={() => router.push(`/u/${post.user.username}`)}
+            onClick={() => {
+              withAuth(() => {
+                router.push(`/u/${post.user.username}`);
+              });
+            }}
           >
             <Image
               alt={post.user.username}

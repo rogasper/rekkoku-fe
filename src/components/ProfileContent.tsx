@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from "react";
 import { Avatar, Button, Chip, Tab, Tabs } from "@heroui/react";
-import { Bookmark, Heart, Send, FileText } from "lucide-react";
+import { Bookmark, Heart, Send, FileText, Share2 } from "lucide-react";
 import ProfileGridItem from "./ProfileGridItem";
 import DraftModal from "./DraftModal";
 import {
@@ -14,22 +14,24 @@ import {
   useUserPosts,
 } from "@/hooks/useApi";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface ProfileContentProps {
   username: string;
+  isOwnProfile: boolean;
 }
 
-const ProfileContent = ({ username }: ProfileContentProps) => {
+const ProfileContent = ({ username, isOwnProfile }: ProfileContentProps) => {
   const [selectedTab, setSelectedTab] = useState("posts");
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
-  const { user: currentUser } = useAuth();
+  const router = useRouter();
 
   // Get user profile by username
   const { data: userProfile, isLoading: isUserLoading } =
     useUserByUsername(username);
 
   const userId = userProfile?.data?.id;
-  const isOwnProfile = currentUser?.userId === userId;
 
   // Get user stats
   const { data: userStats, isLoading: isStatsLoading } = useUserStats(
@@ -38,7 +40,8 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
 
   // Get user posts - use different hooks based on profile ownership
   const { data: myPostsData, isLoading: isMyPostsLoading } = useMyPosts(
-    isOwnProfile ? { status: "PUBLISHED" } : undefined
+    isOwnProfile ? { status: "PUBLISHED" } : undefined,
+    isOwnProfile
   );
 
   const { data: userPostsData, isLoading: isUserPostsLoading } = useUserPosts(
@@ -46,8 +49,13 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
     !isOwnProfile && !!userId ? { status: "PUBLISHED" } : undefined
   );
 
+  console.log("isOwnProfile:", isOwnProfile);
+
   // Get draft posts (only for own profile)
-  const { data: draftPosts } = useMyDraftPosts(isOwnProfile ? {} : undefined);
+  const { data: draftPosts } = useMyDraftPosts(
+    isOwnProfile ? {} : undefined,
+    isOwnProfile
+  );
 
   // Get user liked posts
   const {
@@ -59,13 +67,14 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
   } = useUserLikedPosts(userId || "");
 
   // Get user bookmarked posts
+  console.log("isOwnProfile:", isOwnProfile);
   const {
     data: bookmarkedPosts,
     isLoading: isBookmarkedLoading,
     fetchNextPage: fetchNextBookmarked,
     hasNextPage: hasNextBookmarked,
     isFetchingNextPage: isFetchingNextBookmarked,
-  } = useUserBookmarkedPosts(userId || "");
+  } = useUserBookmarkedPosts(userId || "", {}, isOwnProfile);
 
   // Transform data for rendering
   const allMyPosts = useMemo(() => {
@@ -87,8 +96,6 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
   }, [bookmarkedPosts]);
 
   const draftsCount = draftPosts?.data?.length || 0;
-
-  console.log("posts:", allMyPosts);
 
   const renderContent = () => {
     switch (selectedTab) {
@@ -131,9 +138,10 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
                   {/* Draft image or placeholder */}
                   <div className="absolute inset-0">
                     {draftPosts?.data?.[0]?.postPlaces?.[0]?.place?.image ? (
-                      <img
+                      <Image
                         src={draftPosts.data[0].postPlaces[0].place.image}
                         alt={draftPosts.data[0].title}
+                        fill
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     ) : (
@@ -181,7 +189,7 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
             ) : (
               publishedPosts.map((post: any) => (
                 <ProfileGridItem
-                  key={post.id}
+                  key={`published-${post.id}`}
                   title={post.title}
                   image={
                     post.postPlaces?.[0]?.place?.image || "/placeholder.jpg"
@@ -217,7 +225,7 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
 
         return allLikedPosts.map((post: any) => (
           <ProfileGridItem
-            key={post.id}
+            key={`liked-${post.id}`}
             title={post.title}
             image={post.postPlaces?.[0]?.place?.image || "/placeholder.jpg"}
             likes={post.likeCount || 0}
@@ -246,19 +254,22 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
           );
         }
 
-        return allBookmarkedPosts.map((post: any) => (
-          <ProfileGridItem
-            key={post.id}
-            title={post.title}
-            image={post.postPlaces?.[0]?.place?.image || "/placeholder.jpg"}
-            likes={post.likeCount || 0}
-            bookmarks={post.bookmarksCount || 0}
-            places={post._count?.postPlaces || 0}
-            location={post.city?.name || "Unknown"}
-            type="bookmark"
-            slug={post.slug}
-          />
-        ));
+        return (
+          isOwnProfile &&
+          allBookmarkedPosts.map((post: any) => (
+            <ProfileGridItem
+              key={`bookmarked-${post.id}`}
+              title={post.title}
+              image={post.postPlaces?.[0]?.place?.image || "/placeholder.jpg"}
+              likes={post.likeCount || 0}
+              bookmarks={post.bookmarksCount || 0}
+              places={post._count?.postPlaces || 0}
+              location={post.city?.name || "Unknown"}
+              type="bookmark"
+              slug={post.slug}
+            />
+          ))
+        );
 
       default:
         return null;
@@ -317,7 +328,7 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
             <div className="flex flex-wrap gap-2">
               {user.userDetail?.socialLinks?.map((link: any) => (
                 <div
-                  key={link.id}
+                  key={`social-${link.platform}`}
                   className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
                 >
                   <a
@@ -405,21 +416,31 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
               <Button
                 variant="bordered"
                 className="bg-gray-100 text-sm flex-1 max-w-[120px]"
+                onPress={() => router.push("/settings")}
               >
                 Edit Profile
               </Button>
             ) : (
-              <Button
-                variant="bordered"
-                className="bg-gray-100 text-sm flex-1 max-w-[120px]"
-              >
-                Follow
-              </Button>
+              // <Button
+              //   variant="bordered"
+              //   className="bg-gray-100 text-sm flex-1 max-w-[120px]"
+              // >
+              //   Follow
+              // </Button>
+              <></>
             )}
             <Button
               variant="bordered"
               className="bg-gray-100 text-sm flex-1 max-w-[120px]"
+              onPress={() =>
+                navigator.share({
+                  title: user.name,
+                  text: user.username,
+                  url: `${window.location.origin}/u/${user.username}`,
+                })
+              }
             >
+              <Share2 className="w-4 h-4 sm:w-6 sm:h-6" />
               Share Profile
             </Button>
           </div>
@@ -441,7 +462,7 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
             >
               <Tab key="posts" title="Posts" />
               <Tab key="tastes" title="Tastes" />
-              <Tab key="bookmarks" title="Bookmarks" />
+              {isOwnProfile && <Tab key="bookmarks" title="Bookmarks" />}
             </Tabs>
           </div>
 
@@ -456,7 +477,7 @@ const ProfileContent = ({ username }: ProfileContentProps) => {
             <div className="flex justify-center pt-4">
               <Button
                 variant="bordered"
-                onClick={() => {
+                onPress={() => {
                   if (selectedTab === "tastes") fetchNextLiked();
                   else if (selectedTab === "bookmarks") fetchNextBookmarked();
                 }}

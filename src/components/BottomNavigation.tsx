@@ -17,7 +17,7 @@ import {
 import { useRouter, usePathname } from "next/navigation";
 import { AuthSession } from "@/lib/auth";
 import { useState } from "react";
-import LoginModal from "./LoginModal";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 import CreatePostModal from "./CreatePostModal";
 
 interface BottomNavigationProps {
@@ -27,8 +27,8 @@ interface BottomNavigationProps {
 export default function BottomNavigation({ user }: BottomNavigationProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { openLoginModal } = useAuthModal();
 
   const handleNavigation = (
     path: string,
@@ -36,7 +36,7 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
     isCreate: boolean = false
   ) => {
     if (requiresAuth && !user) {
-      setIsLoginModalOpen(true);
+      openLoginModal();
       return;
     }
 
@@ -128,11 +128,6 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
 
       {/* Add bottom padding to main content when bottom nav is visible */}
       <div className="lg:hidden h-20" />
-
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      />
 
       {/* Create Post Modal - now uses the full form */}
       <CreatePostModal

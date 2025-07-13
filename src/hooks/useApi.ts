@@ -102,11 +102,11 @@ export function useDeleteUser() {
 }
 
 // ===== USERNAME HOOKS =====
-export function useCheckUsername(username: string) {
+export function useCheckUsername(username: string, enabled?: boolean) {
   return useQuery({
     queryKey: queryKeys.username.check(username),
     queryFn: () => apiClient.get(API_ENDPOINTS.USERNAME.CHECK(username)),
-    enabled: !!username && username.length >= 3,
+    enabled: !!username && username.length >= 3 && enabled,
     staleTime: 30 * 1000, // 30 seconds
   });
 }
@@ -141,7 +141,10 @@ export function useUpdateUsername() {
 }
 
 // ===== POSTS HOOKS =====
-export function usePosts(filters?: Record<string, any>) {
+export function usePosts(
+  filters?: Record<string, any>,
+  options?: { enabled?: boolean }
+) {
   return useInfiniteQuery({
     queryKey: queryKeys.posts.list(filters || {}),
     queryFn: ({ pageParam = 1 }) =>
@@ -151,6 +154,7 @@ export function usePosts(filters?: Record<string, any>) {
           page: pageParam,
         },
       }),
+    enabled: options?.enabled ?? true,
     initialPageParam: 1,
     getNextPageParam: (lastPage: any, allPages) => {
       const currentPage = lastPage.meta?.page || allPages.length;
@@ -206,14 +210,24 @@ export function usePostBySlug(slug: string) {
   });
 }
 
-export function useMyPosts(filters?: Record<string, any>) {
+export function useMyPosts(filters?: Record<string, any>, enabled?: boolean) {
   return useQuery({
     queryKey: queryKeys.posts.myPosts(filters || {}),
-    queryFn: () => apiClient.get(API_ENDPOINTS.POSTS.GET_MY_POSTS, filters),
+    queryFn: () =>
+      apiClient.get(API_ENDPOINTS.POSTS.GET_MY_POSTS, {
+        params: {
+          ...filters,
+          status: "PUBLISHED",
+        },
+      }),
+    enabled: !!enabled,
   });
 }
 
-export function useMyDraftPosts(filters?: Record<string, any>) {
+export function useMyDraftPosts(
+  filters?: Record<string, any>,
+  enabled?: boolean
+) {
   return useQuery({
     queryKey: queryKeys.posts.myPosts({ ...filters, status: "DRAFT" }),
     queryFn: () =>
@@ -223,6 +237,7 @@ export function useMyDraftPosts(filters?: Record<string, any>) {
           status: "DRAFT",
         },
       }),
+    enabled: !!enabled,
   });
 }
 
@@ -561,7 +576,8 @@ export function useUserLikedPosts(
 
 export function useUserBookmarkedPosts(
   userId: string,
-  filters?: Record<string, any>
+  filters?: Record<string, any>,
+  enabled?: boolean
 ) {
   return useInfiniteQuery({
     queryKey: queryKeys.posts.userBookmarked(userId, filters || {}),
@@ -572,7 +588,7 @@ export function useUserBookmarkedPosts(
           page: pageParam,
         },
       }),
-    enabled: !!userId,
+    enabled: !!userId && enabled,
     initialPageParam: 1,
     getNextPageParam: (lastPage: any, allPages) => {
       const currentPage = lastPage.meta?.page || allPages.length;

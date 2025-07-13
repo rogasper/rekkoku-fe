@@ -38,6 +38,7 @@ import {
   isProcessingCompleted,
 } from "@/utils/ui";
 import { POST_STATUS, ANIMATION_DELAYS } from "@/utils/constants";
+import { editPostAction } from "@/actions/action";
 
 interface ProgressData {
   postId: string;
@@ -165,18 +166,9 @@ const ReviewContent = ({ slug }: ReviewContentProps) => {
     router.push("/");
   };
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
     // Store post data in localStorage untuk edit page
-    if (postResponse) {
-      localStorage.setItem(
-        "editPostData",
-        JSON.stringify({
-          post: postResponse,
-          timestamp: Date.now(),
-        })
-      );
-    }
-    router.push(`/edit/${slug}?from=review`);
+    await editPostAction(slug);
   };
 
   const handlePublish = () => {
@@ -284,7 +276,8 @@ const ReviewContent = ({ slug }: ReviewContentProps) => {
             </span>
             {isCompleted && (
               <div className="flex gap-2">
-                <Button
+                {/* PENDING: add back later */}
+                {/* <Button
                   color="primary"
                   variant="bordered"
                   onPress={handleEdit}
@@ -292,7 +285,7 @@ const ReviewContent = ({ slug }: ReviewContentProps) => {
                   startContent={<Edit3 className="w-4 h-4" />}
                 >
                   Edit Post
-                </Button>
+                </Button> */}
                 <Button
                   color="primary"
                   className="bg-[#EA7B26] text-white"

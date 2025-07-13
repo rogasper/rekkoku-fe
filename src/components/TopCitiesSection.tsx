@@ -134,9 +134,6 @@ export default function TopCitiesSection({ limit = 5 }: TopCitiesSectionProps) {
                     </Chip>
                   )}
                 </div>
-                <p className="text-sm text-gray-500">
-                  Province: {city.province}
-                </p>
               </div>
 
               {/* Stats */}

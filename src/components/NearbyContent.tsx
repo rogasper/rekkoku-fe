@@ -10,7 +10,7 @@ import {
   RefreshCw,
   AlertTriangle,
 } from "lucide-react";
-import Image from "next/image";
+// import Image from "next/image";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useInView } from "react-intersection-observer";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -156,6 +156,7 @@ const NearbyContent = ({
     }
   }, [
     initialPage,
+    posts,
     posts?.pages?.length,
     hasNextPage,
     isFetchingNextPage,

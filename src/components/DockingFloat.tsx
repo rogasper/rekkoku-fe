@@ -3,6 +3,7 @@ import { Button, Card, CardBody } from "@heroui/react";
 import { Bookmark, Heart, Share, Share2Icon } from "lucide-react";
 import React, { useState } from "react";
 import { useBookmarkPost, useLikePost } from "@/hooks/useApi";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 interface DockingFloatProps {
   post: Post;
@@ -16,30 +17,35 @@ const DockingFloat = ({ post }: DockingFloatProps) => {
   // Use the same mutation hooks as CardItem for consistency
   const { mutate: likePost } = useLikePost();
   const { mutate: bookmarkPost } = useBookmarkPost();
+  const { withAuth } = useAuthGuard();
 
   const handleLikePost = () => {
-    // Instagram-style like animation
-    setIsLikeAnimating(true);
+    withAuth(() => {
+      // Instagram-style like animation
+      setIsLikeAnimating(true);
 
-    // Show floating heart effect
-    if (!post.isLiked) {
-      setShowFloatingHeart(true);
-      setTimeout(() => setShowFloatingHeart(false), 1000);
-    }
+      // Show floating heart effect
+      if (!post.isLiked) {
+        setShowFloatingHeart(true);
+        setTimeout(() => setShowFloatingHeart(false), 1000);
+      }
 
-    setTimeout(() => setIsLikeAnimating(false), 400);
+      setTimeout(() => setIsLikeAnimating(false), 400);
 
-    // Use the same mutation as CardItem
-    likePost(post.id);
+      // Use the same mutation as CardItem
+      likePost(post.id);
+    });
   };
 
   const handleBookmarkPost = () => {
-    // Simple bookmark animation
-    setIsBookmarkAnimating(true);
-    setTimeout(() => setIsBookmarkAnimating(false), 300);
+    withAuth(() => {
+      // Simple bookmark animation
+      setIsBookmarkAnimating(true);
+      setTimeout(() => setIsBookmarkAnimating(false), 300);
 
-    // Use the same mutation as CardItem
-    bookmarkPost(post.id);
+      // Use the same mutation as CardItem
+      bookmarkPost(post.id);
+    });
   };
 
   return (

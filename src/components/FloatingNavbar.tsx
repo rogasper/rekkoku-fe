@@ -14,36 +14,34 @@ import {
   DropdownItem,
 } from "@heroui/react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import LoginModal from "./LoginModal";
+import { useEffect } from "react";
 import useUser from "@/store/useUser";
 import { AuthSession } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { logout } from "@/actions/logout";
-import { LogOutIcon, SettingsIcon, User2Icon } from "lucide-react";
+import {
+  BellDotIcon,
+  LogOutIcon,
+  SearchIcon,
+  SettingsIcon,
+  User2Icon,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 
 interface FloatingNavbarProps {
   user: AuthSession | null;
 }
 
 export default function FloatingNavbar({ user }: FloatingNavbarProps) {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const setUser = useUser((state) => state.setUser);
   const queryClient = useQueryClient();
+  const { openLoginModal } = useAuthModal();
 
   useEffect(() => {
     setUser(user);
   }, [user, setUser]);
-
-  const handleOpenLoginModal = () => {
-    setIsLoginModalOpen(true);
-  };
-
-  const handleCloseLoginModal = () => {
-    setIsLoginModalOpen(false);
-  };
 
   const router = useRouter();
 
@@ -102,6 +100,28 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
           </div>
         </NavbarBrand>
         <NavbarContent justify="end">
+          <div className="hidden lg:block">
+            <Button
+              onPress={() => router.push("/search")}
+              className="bg-transparent hover:bg-transparent hover:text-white text-white font-semibold"
+              variant="flat"
+              radius="full"
+              isIconOnly
+            >
+              <SearchIcon className="w-5 h-5" color="#EA7B26" />
+            </Button>
+            {user && (
+              <Button
+                onPress={() => router.push("/notifications")}
+                className="bg-transparent hover:bg-transparent hover:text-white text-white font-semibold"
+                variant="flat"
+                radius="full"
+                isIconOnly
+              >
+                <BellDotIcon className="w-5 h-5" color="#EA7B26" />
+              </Button>
+            )}
+          </div>
           {user ? (
             <NavbarItem>
               {/* Desktop: Avatar with Dropdown Menu */}
@@ -146,7 +166,7 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
               </div>
 
               {/* Mobile: Simple Avatar Button (no dropdown) */}
-              <div className="lg:hidden">
+              {/* <div className="lg:hidden">
                 <Avatar
                   as="button"
                   name={user.name}
@@ -155,12 +175,12 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
                   className="cursor-pointer transition-transform hover:scale-105"
                   onClick={() => router.push(`/u/${user?.username}`)}
                 />
-              </div>
+              </div> */}
             </NavbarItem>
           ) : (
             <NavbarItem>
               <Button
-                onPress={handleOpenLoginModal}
+                onPress={openLoginModal}
                 className="bg-[#EA7B26] hover:bg-[#EA7B26]/80 hover:text-white text-white font-semibold"
                 variant="flat"
               >
@@ -170,8 +190,6 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
           )}
         </NavbarContent>
       </Navbar>
-
-      <LoginModal isOpen={isLoginModalOpen} onClose={handleCloseLoginModal} />
     </>
   );
 }

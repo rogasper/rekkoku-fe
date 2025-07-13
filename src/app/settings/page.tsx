@@ -9,7 +9,15 @@ import {
   Chip,
   addToast,
 } from "@heroui/react";
-import { Camera, Loader2, Plus, X, Check, AlertCircle } from "lucide-react";
+import {
+  Camera,
+  Loader2,
+  Plus,
+  X,
+  Check,
+  AlertCircle,
+  ArrowLeft,
+} from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,6 +31,11 @@ import {
   useCheckUsername,
   useUsernameSuggestions,
 } from "@/hooks/useApi";
+import { useRouter } from "next/navigation";
+import ImageCropModal from "@/components/ImageCropModal";
+import AvatarPreviewModal from "@/components/AvatarPreviewModal";
+import { useDebounce } from "@/hooks/use-debounce";
+import { logout } from "@/actions/logout";
 
 // Zod schema for form validation
 const settingsSchema = z.object({
@@ -44,9 +57,16 @@ const settingsSchema = z.object({
 
 type SettingsFormData = z.infer<typeof settingsSchema>;
 
+const SOCIAL_PLATFORMS = [
+  { value: "instagram", label: "📷 Instagram" },
+  { value: "tiktok", label: "🎵 TikTok" },
+  { value: "website", label: "🌐 Website" },
+];
+
 const SettingsPage = () => {
   const { data: profile, isLoading: isLoadingProfile } = useProfile();
   const { data: userDetails, isLoading: isLoadingDetails } = useUserDetails();
+  const router = useRouter();
 
   const updateProfileMutation = useUpdateMyProfile();
   const updateUsernameMutation = useUpdateUsername();
@@ -54,6 +74,9 @@ const SettingsPage = () => {
 
   const [usernameError, setUsernameError] = useState("");
   const [showUsernameSuggestions, setShowUsernameSuggestions] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
 
   // React Hook Form setup
   const {
@@ -78,6 +101,8 @@ const SettingsPage = () => {
   // Watch username for real-time validation
   const watchedUsername = watch("username");
 
+  const debouncedUsername = useDebounce(watchedUsername, 1000);
+
   // Field array for social links
   const {
     fields: socialLinksFields,
@@ -91,7 +116,10 @@ const SettingsPage = () => {
 
   // Check username availability with debouncing
   const { data: usernameCheck, isLoading: isCheckingUsername } =
-    useCheckUsername(watchedUsername);
+    useCheckUsername(
+      debouncedUsername,
+      profile?.data?.username !== debouncedUsername
+    );
 
   // Get username suggestions if current username is taken
   const { data: usernameSuggestions } = useUsernameSuggestions(
@@ -152,6 +180,15 @@ const SettingsPage = () => {
     }
   }, [usernameCheck, watchedUsername, profile?.data?.username]);
 
+  // Cleanup selected image on component unmount
+  useEffect(() => {
+    return () => {
+      if (selectedImage) {
+        URL.revokeObjectURL(selectedImage);
+      }
+    };
+  }, [selectedImage]);
+
   const isLoading =
     isLoadingProfile ||
     isLoadingDetails ||
@@ -160,11 +197,90 @@ const SettingsPage = () => {
     updateUserDetailsMutation.isPending ||
     isSubmitting;
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // TODO: Implement image upload
-      console.log("Image upload:", file);
+  // PENDING: Add back in
+  // const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     // Check if file is an image
+  //     if (!file.type.startsWith("image/")) {
+  //       addToast({
+  //         title: "Invalid file type",
+  //         description: "Please select an image file",
+  //         color: "danger",
+  //       });
+  //       return;
+  //     }
+
+  //     // Check file size (max 5MB)
+  //     if (file.size > 5 * 1024 * 1024) {
+  //       addToast({
+  //         title: "File too large",
+  //         description: "Please select an image smaller than 5MB",
+  //         color: "danger",
+  //       });
+  //       return;
+  //     }
+
+  //     // Create object URL for preview
+  //     const imageUrl = URL.createObjectURL(file);
+  //     setSelectedImage(imageUrl);
+  //     setCropModalOpen(true);
+  //   }
+  //   // Clear input value to allow selecting the same file again
+  //   e.target.value = "";
+  // };
+
+  const handleCropComplete = async (croppedImageBlob: Blob) => {
+    try {
+      // Convert blob to base64 for preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setValue("image", base64String);
+      };
+      reader.readAsDataURL(croppedImageBlob);
+
+      // Close modal and cleanup
+      setCropModalOpen(false);
+      if (selectedImage) {
+        URL.revokeObjectURL(selectedImage);
+      }
+      setSelectedImage(null);
+
+      addToast({
+        title: "Image cropped successfully",
+        description: "Your profile picture has been updated",
+        color: "success",
+      });
+    } catch (error) {
+      console.error("Error processing cropped image:", error);
+      addToast({
+        title: "Error processing image",
+        description: "Please try again",
+        color: "danger",
+      });
+    }
+  };
+
+  const handleCropCancel = () => {
+    setCropModalOpen(false);
+    if (selectedImage) {
+      URL.revokeObjectURL(selectedImage);
+    }
+    setSelectedImage(null);
+  };
+
+  const handleAvatarClick = () => {
+    setAvatarPreviewOpen(true);
+  };
+
+  const handleChangePhotoFromPreview = () => {
+    // Trigger file input click
+    const fileInput = document.getElementById(
+      "profile-picture"
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
     }
   };
 
@@ -182,21 +298,22 @@ const SettingsPage = () => {
     // Use setValue instead of updateSocialLink to avoid re-render focus issues
     if (field === "platform") {
       setValue(`socialLinks.${index}.platform` as any, value);
-      // Clear username when platform changes to website
-      if (value === "website") {
-        setValue(`socialLinks.${index}.username` as any, "");
-        setValue(`socialLinks.${index}.url` as any, "");
-      }
+      // Clear username and URL when platform changes
+      setValue(`socialLinks.${index}.username` as any, "");
+      setValue(`socialLinks.${index}.url` as any, "");
     } else if (field === "username") {
       setValue(`socialLinks.${index}.username` as any, value);
+      // Get current platform from the form state
+      const currentLinks = watch("socialLinks");
+      const currentPlatform = currentLinks[index]?.platform;
+
       // Auto-generate URL for Instagram and TikTok based on username
-      const platform = socialLinksFields[index].platform;
-      if (platform === "instagram") {
+      if (currentPlatform === "instagram") {
         setValue(
           `socialLinks.${index}.url` as any,
           value ? `https://instagram.com/${value}` : ""
         );
-      } else if (platform === "tiktok") {
+      } else if (currentPlatform === "tiktok") {
         setValue(
           `socialLinks.${index}.url` as any,
           value ? `https://tiktok.com/@${value}` : ""
@@ -220,11 +337,15 @@ const SettingsPage = () => {
     }
   };
 
-  const getInputValue = (link: any) => {
-    if (link.platform === "website") {
-      return link.url || "";
+  const getInputValue = (link: any, index: number) => {
+    // Get current platform from form state to ensure accuracy
+    const currentLinks = watch("socialLinks");
+    const currentPlatform = currentLinks[index]?.platform || link.platform;
+
+    if (currentPlatform === "website") {
+      return currentLinks[index]?.url || link.url || "";
     }
-    return link.username || "";
+    return currentLinks[index]?.username || link.username || "";
   };
 
   const validateSocialInput = (platform: string, value: string) => {
@@ -341,7 +462,29 @@ const SettingsPage = () => {
   return (
     <main className="max-w-[1024px] mx-auto sm:px-6 min-h-screen">
       <div className="p-4 sm:p-6">
-        <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
+        <div className="flex justify-between items-center">
+          <Button
+            variant="light"
+            onPress={() => router.push("/")}
+            className="w-fit sm:w-auto bg-transparent flex items-center gap-2 mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <h1 className="text-lg sm:text-2xl font-bold">
+              Account Settings
+            </h1>{" "}
+          </Button>
+          <Button
+            type="button"
+            className="w-fit"
+            variant="solid"
+            color="danger"
+            onPress={() => {
+              logout();
+            }}
+          >
+            Logout
+          </Button>
+        </div>
 
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -349,17 +492,31 @@ const SettingsPage = () => {
         >
           {/* Profile Picture */}
           <div className="flex flex-col items-center gap-4">
-            <div className="relative">
+            <div className="relative group">
               <Controller
                 name="image"
                 control={control}
                 render={({ field }) => (
-                  <Avatar src={field.value} className="w-24 h-24" isBordered />
+                  <div
+                    className="relative cursor-pointer transition-all duration-200 hover:scale-105"
+                    onClick={handleAvatarClick}
+                  >
+                    <Avatar
+                      src={field.value}
+                      className="w-24 h-24 ring-2 ring-transparent hover:ring-[#EA7B26]/50 transition-all duration-200"
+                      isBordered
+                    />
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                      <p className="text-white text-xs font-medium">View</p>
+                    </div>
+                  </div>
                 )}
               />
-              <label
+              {/* PENDING: Add back in */}
+              {/* <label
                 htmlFor="profile-picture"
-                className="absolute bottom-0 right-0 p-2 bg-[#EA7B26] rounded-full cursor-pointer hover:bg-[#EA7B26]/80 transition-colors"
+                className="absolute bottom-0 right-0 p-2 bg-[#EA7B26] rounded-full cursor-pointer hover:bg-[#EA7B26]/80 transition-colors z-10"
               >
                 <Camera className="w-4 h-4 text-white" />
                 <input
@@ -369,10 +526,10 @@ const SettingsPage = () => {
                   accept="image/*"
                   onChange={handleImageUpload}
                 />
-              </label>
+              </label> */}
             </div>
             <p className="text-sm text-gray-500">
-              Click the camera icon to update your profile picture
+              Click avatar to preview or camera icon to change picture
             </p>
           </div>
 
@@ -554,9 +711,12 @@ const SettingsPage = () => {
             ) : (
               <div className="space-y-3">
                 {socialLinksFields.map((field, index) => {
-                  const inputValue = getInputValue(field);
+                  const currentLinks = watch("socialLinks");
+                  const currentPlatform =
+                    currentLinks[index]?.platform || field.platform;
+                  const inputValue = getInputValue(field, index);
                   const isValidInput = validateSocialInput(
-                    field.platform,
+                    currentPlatform,
                     inputValue
                   );
 
@@ -570,7 +730,11 @@ const SettingsPage = () => {
                             <Select
                               key={`${field.id}-platform-select`}
                               placeholder="Platform"
-                              selectedKeys={[platformField.value]}
+                              selectedKeys={
+                                platformField.value
+                                  ? new Set([platformField.value])
+                                  : new Set()
+                              }
                               onSelectionChange={(keys) => {
                                 const platform = Array.from(keys)[0] as string;
                                 handleSocialLinkChange(
@@ -582,54 +746,44 @@ const SettingsPage = () => {
                               className="w-32"
                               variant="bordered"
                               size="sm"
+                              disallowEmptySelection
                             >
-                              <SelectItem key="instagram">
-                                <div className="flex items-center gap-2">
-                                  <span>📷</span>
-                                  <span>Instagram</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem key="tiktok">
-                                <div className="flex items-center gap-2">
-                                  <span>🎵</span>
-                                  <span>TikTok</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem key="website">
-                                <div className="flex items-center gap-2">
-                                  <span>🌐</span>
-                                  <span>Website</span>
-                                </div>
-                              </SelectItem>
+                              {SOCIAL_PLATFORMS.map((platform) => {
+                                return (
+                                  <SelectItem key={platform.value}>
+                                    {platform.label}
+                                  </SelectItem>
+                                );
+                              })}
                             </Select>
                           )}
                         />
 
                         <Controller
                           name={
-                            field.platform === "website"
+                            currentPlatform === "website"
                               ? `socialLinks.${index}.url`
                               : `socialLinks.${index}.username`
                           }
                           control={control}
                           render={({ field: inputField }) => (
                             <Input
-                              key={`${field.id}-${field.platform}-input`}
+                              key={`${field.id}-${currentPlatform}-input`}
                               value={inputField.value || ""}
-                              placeholder={getPlaceholderText(field.platform)}
+                              placeholder={getPlaceholderText(currentPlatform)}
                               variant="bordered"
                               size="sm"
                               className="flex-1"
                               isInvalid={!isValidInput}
                               errorMessage={
                                 !isValidInput
-                                  ? field.platform === "website"
+                                  ? currentPlatform === "website"
                                     ? "Enter a valid URL"
                                     : "Username can only contain letters, numbers, dots, and underscores"
                                   : undefined
                               }
                               startContent={
-                                field.platform !== "website" ? (
+                                currentPlatform !== "website" ? (
                                   <span className="text-gray-400">@</span>
                                 ) : (
                                   <span className="text-gray-400">🔗</span>
@@ -637,7 +791,7 @@ const SettingsPage = () => {
                               }
                               onChange={(e) => {
                                 const fieldName =
-                                  field.platform === "website"
+                                  currentPlatform === "website"
                                     ? "url"
                                     : "username";
                                 handleSocialLinkChange(
@@ -663,11 +817,11 @@ const SettingsPage = () => {
                       </div>
 
                       {/* Show generated URL for preview */}
-                      {field.platform !== "website" &&
-                        field.username &&
+                      {currentPlatform !== "website" &&
+                        currentLinks[index]?.username &&
                         isValidInput && (
                           <div className="ml-[8.5rem] text-xs text-gray-500">
-                            Preview: {field.url}
+                            Preview: {currentLinks[index]?.url}
                           </div>
                         )}
                     </div>
@@ -681,7 +835,7 @@ const SettingsPage = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="pt-4">
+          <div className="pt-4 space-y-2">
             <Button
               type="submit"
               className="w-full bg-[#EA7B26] text-white"
@@ -698,6 +852,26 @@ const SettingsPage = () => {
             )}
           </div>
         </form>
+
+        {/* Image Crop Modal */}
+        {selectedImage && (
+          <ImageCropModal
+            isOpen={cropModalOpen}
+            onOpenChange={setCropModalOpen}
+            imageSrc={selectedImage}
+            onCropComplete={handleCropComplete}
+            onCancel={handleCropCancel}
+          />
+        )}
+
+        {/* Avatar Preview Modal */}
+        <AvatarPreviewModal
+          isOpen={avatarPreviewOpen}
+          onOpenChange={setAvatarPreviewOpen}
+          avatarSrc={watch("image") || profile?.data?.avatar || ""}
+          userName={watch("name") || profile?.data?.name || "User"}
+          onChangePhoto={handleChangePhotoFromPreview}
+        />
       </div>
     </main>
   );

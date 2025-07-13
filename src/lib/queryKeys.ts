@@ -42,6 +42,8 @@ export const queryKeys = {
       [...queryKeys.posts.all, "nearby", params] as const,
     myPosts: (filters: Record<string, any>) =>
       [...queryKeys.posts.all, "my-posts", { filters }] as const,
+    myDraftPosts: (filters: Record<string, any>) =>
+      [...queryKeys.posts.all, "my-draft-posts", { filters }] as const,
     bySlug: (slug: string) => [...queryKeys.posts.all, "slug", slug] as const,
     progress: (id: string) => [...queryKeys.posts.all, "progress", id] as const,
     userLiked: (userId: string, filters: Record<string, any>) =>

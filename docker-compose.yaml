@@ -1,0 +1,12 @@
+name: rekkoku_fe
+services:
+  app:
+    build: .
+    container_name: rekkoku_fe
+    command: npm run start
+    ports:
+      - ${PORT}:3000
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+    restart: unless-stopped
