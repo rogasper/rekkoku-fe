@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
-import { Share2, Compass, Users, Code, Globe, Heart } from "lucide-react";
+import { Share2, Compass, Globe, Heart } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Tentang Rekkoku",
@@ -122,12 +123,12 @@ const AboutPage = () => {
             serta menemukan permata tersembunyi di Indonesia.
           </p>
           <div className="mt-8">
-            <a
-              href="/#search"
+            <Link
+              href="/"
               className="rounded-md bg-white px-6 py-3 text-lg font-semibold text-blue-600 shadow-md transition-transform hover:scale-105"
             >
               Mulai Sekarang
-            </a>
+            </Link>
           </div>
         </section>
       </main>
