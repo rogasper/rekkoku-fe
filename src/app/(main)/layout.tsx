@@ -1,3 +1,4 @@
+import Footer from "@/components/Footer";
 import FloatingNavbar from "@/components/FloatingNavbar";
 import TabsNavbar from "@/components/TabsNavbar";
 import FloatingCreateButton from "@/components/FloatingCreateButton";
@@ -18,6 +19,7 @@ export default async function MainLayout({
       {children}
       <FloatingCreateButton />
       <BottomNavigation user={user} />
+      <Footer />
     </>
   );
 }

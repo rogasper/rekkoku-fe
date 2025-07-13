@@ -244,7 +244,7 @@ export default function ExploreContent({
                       </Button>
                     )}
                     <Button
-                      color="primary"
+                      className="bg-[#EA7B26] text-white"
                       onPress={handleSearch}
                       startContent={<Search className="w-4 h-4" />}
                     >
@@ -322,7 +322,7 @@ export default function ExploreContent({
               <div className="grid gap-4 sm:gap-6 lg:gap-8 grid-cols-1">
                 <div className="xl:order-1">
                   <Suspense fallback={<SectionSkeleton />}>
-                    <TopCitiesSection limit={10} />
+                    <TopCitiesSection limit={5} />
                   </Suspense>
                 </div>
                 <div className="space-y-4 sm:space-y-6 lg:space-y-8 xl:order-2">
@@ -330,7 +330,7 @@ export default function ExploreContent({
                     <TopPostsSection limit={5} />
                   </Suspense>
                   <Suspense fallback={<SectionSkeleton />}>
-                    <TopUsersSection limit={3} />
+                    <TopUsersSection limit={5} />
                   </Suspense>
                 </div>
               </div>

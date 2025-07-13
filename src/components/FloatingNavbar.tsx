@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { logout } from "@/actions/logout";
 import {
   BellDotIcon,
+  InfoIcon,
   LogOutIcon,
   SearchIcon,
   SettingsIcon,
@@ -52,6 +53,9 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
         break;
       case "settings":
         router.push("/settings");
+        break;
+      case "about":
+        router.push("/about");
         break;
       case "logout":
         handleLogout();
@@ -153,6 +157,12 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
                       <div className="flex items-center gap-2">
                         <SettingsIcon className="w-4 h-4" />
                         <span>Settings</span>
+                      </div>
+                    </DropdownItem>
+                    <DropdownItem key="about">
+                      <div className="flex items-center gap-2">
+                        <InfoIcon className="w-4 h-4" />
+                        <span>About</span>
                       </div>
                     </DropdownItem>
                     <DropdownItem key="logout" color="danger">

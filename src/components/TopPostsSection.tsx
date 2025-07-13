@@ -159,7 +159,7 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <Tooltip content={post.title} placement="top">
-                      <h3 className="font-semibold text-gray-900 line-clamp-1 text-sm sm:text-lg">
+                      <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm sm:text-lg">
                         {post.title}
                       </h3>
                     </Tooltip>
@@ -168,7 +168,7 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                         size="sm"
                         color={getRankColor(post.rank)}
                         variant="flat"
-                        className="flex-shrink-0"
+                        className="flex-shrink-0 hidden sm:flex "
                       >
                         #{post.rank}
                       </Chip>

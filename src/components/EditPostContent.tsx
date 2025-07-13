@@ -297,6 +297,9 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                   variant="bordered"
                   {...register("title")}
                   errorMessage={errors.title?.message}
+                  classNames={{
+                    input: "focus:outline-none",
+                  }}
                   isInvalid={!!errors.title}
                   isDisabled={isSubmitting || updatePostMutation.isPending}
                 />
@@ -519,6 +522,9 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                         updateGmapsUrl(actualIndex, e.target.value)
                       }
                       className="flex-1"
+                      classNames={{
+                        input: "focus:outline-none",
+                      }}
                       isDisabled={isSubmitting || updatePostMutation.isPending}
                     />
                     <Button

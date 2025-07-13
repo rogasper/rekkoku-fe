@@ -1,5 +1,6 @@
 "use client";
 import { useTopCities } from "@/hooks/useApi";
+import { capitalizeWords } from "@/utils";
 import { Card, CardBody, Chip, Skeleton } from "@heroui/react";
 import { MapPin, FileText, Heart, Crown, Medal, Award } from "lucide-react";
 import Link from "next/link";
@@ -19,7 +20,6 @@ interface TopCitiesSectionProps {
 
 export default function TopCitiesSection({ limit = 5 }: TopCitiesSectionProps) {
   const { data: topCities, isLoading, error } = useTopCities(limit);
-
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
@@ -104,9 +104,10 @@ export default function TopCitiesSection({ limit = 5 }: TopCitiesSectionProps) {
 
         <div className="space-y-4">
           {topCities?.data?.map((city: TopCity) => (
-            <div
+            <Link
               key={city.id}
               className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+              href={`/search?cityId=${city.id}`}
             >
               {/* Rank */}
               <div className="flex items-center justify-center w-8">
@@ -121,8 +122,8 @@ export default function TopCitiesSection({ limit = 5 }: TopCitiesSectionProps) {
               {/* City Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-gray-900 truncate">
-                    {city.name}
+                  <h3 className="font-semibold text-gray-900 truncate sm:text-lg text-sm">
+                    {capitalizeWords(city.name)}
                   </h3>
                   {city.rank <= 3 && (
                     <Chip
@@ -134,10 +135,22 @@ export default function TopCitiesSection({ limit = 5 }: TopCitiesSectionProps) {
                     </Chip>
                   )}
                 </div>
+                <div className="flex flex-row sm:hidden gap-2 text-sm">
+                  <div className="flex items-center gap-1 text-gray-600">
+                    <FileText className="w-4 h-4" />
+                    <span className="font-medium">{city.totalPosts}</span>
+                    <span className="text-xs text-gray-400">posts</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-red-500">
+                    <Heart className="w-4 h-4" />
+                    <span className="font-medium">{city.totalLikes}</span>
+                    <span className="text-xs text-gray-400">likes</span>
+                  </div>
+                </div>
               </div>
 
               {/* Stats */}
-              <div className="flex flex-col sm:flex-row gap-2 text-sm">
+              <div className="hidden sm:flex sm:flex-row gap-2 text-sm">
                 <div className="flex items-center gap-1 text-gray-600">
                   <FileText className="w-4 h-4" />
                   <span className="font-medium">{city.totalPosts}</span>
@@ -149,7 +162,7 @@ export default function TopCitiesSection({ limit = 5 }: TopCitiesSectionProps) {
                   <span className="text-xs text-gray-400">likes</span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

@@ -196,6 +196,9 @@ export default function FloatingCreateButton() {
                   <Input
                     placeholder="Enter post title"
                     variant="bordered"
+                    classNames={{
+                      input: "focus:outline-none",
+                    }}
                     isRequired
                     {...register("title")}
                     errorMessage={errors.title?.message}
@@ -252,6 +255,9 @@ export default function FloatingCreateButton() {
                             updateGmapsUrl(index, e.target.value)
                           }
                           className="flex-1"
+                          classNames={{
+                            input: "focus:outline-none",
+                          }}
                         />
                         {gmapsUrls.length > 1 && (
                           <Button

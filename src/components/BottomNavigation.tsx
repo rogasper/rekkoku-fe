@@ -86,6 +86,14 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
     },
   ];
 
+  if (
+    pathname.startsWith("/detail") ||
+    pathname.startsWith("/edit") ||
+    pathname.startsWith("/review")
+  ) {
+    return null;
+  }
+
   return (
     <>
       {/* Bottom Navigation - Mobile Only */}
