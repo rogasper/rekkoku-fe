@@ -7,6 +7,7 @@ services:
     ports:
       - ${PORT}:3000
     environment:
+      PORT: ${PORT}
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
       JWT_SECRET: ${JWT_SECRET}
     restart: unless-stopped
