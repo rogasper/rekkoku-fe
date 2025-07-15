@@ -245,6 +245,11 @@ export default function ExploreContent({
                             setLocalCityId("");
                           }
                         }}
+                        listboxProps={{
+                          emptyContent: isLoadingCities
+                            ? "Loading..."
+                            : "No cities found",
+                        }}
                         items={citiesData || []}
                         isLoading={isLoadingCities}
                         inputValue={citySearch}

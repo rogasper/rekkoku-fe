@@ -146,9 +146,11 @@ export default function CreatePostModal({
       onOpenChange={onOpenChange}
       isDismissable={false}
       backdrop="blur"
-      size="2xl"
+      size={"2xl"}
       scrollBehavior="outside"
-      placement="center"
+      placement="bottom"
+      classNames={{ wrapper: "items-start h-auto", base: "my-auto" }}
+      shouldBlockScroll={false}
     >
       <ModalContent>
         {(onClose) => (
@@ -190,6 +192,11 @@ export default function CreatePostModal({
                   }}
                   onInputChange={(value: string) => {
                     setSearch(value);
+                  }}
+                  listboxProps={{
+                    emptyContent: isLoadingCities
+                      ? "Loading..."
+                      : "No cities found",
                   }}
                   errorMessage={errors.cityId?.message}
                   isInvalid={!!errors.cityId}

@@ -329,6 +329,11 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                       setSearch(value);
                     }
                   }}
+                  listboxProps={{
+                    emptyContent: isLoadingCities
+                      ? "Loading..."
+                      : "No cities found",
+                  }}
                   errorMessage={errors.cityId?.message}
                   isInvalid={!!errors.cityId}
                   items={citiesData || []}

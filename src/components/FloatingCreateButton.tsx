@@ -226,6 +226,11 @@ export default function FloatingCreateButton() {
                     onInputChange={(value: string) => {
                       setSearch(value);
                     }}
+                    listboxProps={{
+                      emptyContent: isLoadingCities
+                        ? "Loading..."
+                        : "No cities found",
+                    }}
                     errorMessage={errors.cityId?.message}
                     isInvalid={!!errors.cityId}
                     items={citiesData || []}
