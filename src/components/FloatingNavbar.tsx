@@ -17,7 +17,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import useUser from "@/store/useUser";
 import { AuthSession } from "@/lib/auth";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { logout } from "@/actions/logout";
 import {
   BellDotIcon,
@@ -31,11 +31,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 
-// interface FloatingNavbarProps {
-//   user: AuthSession | null;
-// }
+interface FloatingNavbarProps {
+  isAuthenticated: boolean;
+}
 
-export default function FloatingNavbar() {
+export default function FloatingNavbar({
+  isAuthenticated,
+}: FloatingNavbarProps) {
   const user = useUser((state) => state.user);
   const queryClient = useQueryClient();
   const { openLoginModal } = useAuthModal();
@@ -110,7 +112,7 @@ export default function FloatingNavbar() {
             >
               <SearchIcon className="w-5 h-5" color="#EA7B26" />
             </Button>
-            {user && (
+            {isAuthenticated && (
               <Button
                 onPress={() => router.push("/notifications")}
                 className="bg-transparent hover:bg-transparent hover:text-white text-white font-semibold"
@@ -122,7 +124,7 @@ export default function FloatingNavbar() {
               </Button>
             )}
           </div>
-          {user ? (
+          {isAuthenticated ? (
             <NavbarItem>
               {/* Desktop: Avatar with Dropdown Menu */}
               <div className="hidden lg:block">
@@ -134,8 +136,8 @@ export default function FloatingNavbar() {
                       classNames={{
                         base: "border-2 border-[#EA7B26]",
                       }}
-                      name={user.name}
-                      src={user.avatar}
+                      name={user?.name}
+                      src={user?.avatar}
                     />
                   </DropdownTrigger>
                   <DropdownMenu

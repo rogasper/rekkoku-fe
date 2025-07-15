@@ -31,7 +31,7 @@ import {
   useCheckUsername,
   useUsernameSuggestions,
 } from "@/hooks/useApi";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import ImageCropModal from "@/components/ImageCropModal";
 import AvatarPreviewModal from "@/components/AvatarPreviewModal";
 import { useDebounce } from "@/hooks/use-debounce";

@@ -3,7 +3,7 @@ import { Card } from "@heroui/react";
 import { BookmarkIcon, HeartIcon, MapPinIcon } from "lucide-react";
 import Image from "next/image";
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 
 type ContentType = "post" | "like" | "bookmark" | "draft";
 

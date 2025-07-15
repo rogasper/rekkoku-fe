@@ -26,7 +26,7 @@ import {
   useProgressPost,
   useUpdatePostStatus,
 } from "@/hooks/useApi";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import type { Post } from "@/types/api";
 import { capitalizeWords } from "@/utils/strings";
 import { formatRelativeTime } from "@/utils/dates";

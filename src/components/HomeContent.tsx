@@ -7,7 +7,8 @@ import { ChevronUpIcon, ChevronDownIcon } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useInView } from "react-intersection-observer";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
+import { useSearchParams } from "next/navigation";
 
 interface HomeContentProps {
   initialPage?: number;

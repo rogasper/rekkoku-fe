@@ -8,7 +8,7 @@ import {
   Button,
 } from "@heroui/react";
 import { FileText } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useMyDraftPosts } from "@/hooks/useApi";
 import ProfileGridItem from "./ProfileGridItem";
 

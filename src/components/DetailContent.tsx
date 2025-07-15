@@ -7,7 +7,7 @@ import { ArrowLeft, Clock, Lock } from "lucide-react";
 import DockingFloat from "./DockingFloat";
 import DetailContentSkeleton from "./DetailContentSkeleton";
 import { useBookmarkPost, useLikePost, usePostBySlug } from "@/hooks/useApi";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import type { Post, PostDetailResponse } from "@/types/api";
 import { capitalizeWords } from "@/utils/strings";
 import { formatRelativeTime } from "@/utils/dates";

@@ -22,8 +22,6 @@ const nextConfig: NextConfig = {
     // Reduce preload warnings by optimizing module loading
     optimizeServerReact: true,
   },
-  // Optimize font loading
-  optimizeFonts: true,
   // Improve resource preloading
   webpack: (config, { dev, isServer }) => {
     // Only apply in development to prevent preload warnings

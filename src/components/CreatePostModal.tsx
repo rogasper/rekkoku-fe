@@ -18,7 +18,7 @@ import { useState } from "react";
 import { useCities, useCreatePost } from "@/hooks/useApi";
 import { City } from "@/types/api";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { UI_CONSTANTS, DEFAULTS } from "@/utils/constants";
 
 const isValidGmapsLink = (url: string): boolean => {

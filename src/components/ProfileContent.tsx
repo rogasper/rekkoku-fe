@@ -14,7 +14,7 @@ import {
   useUserPosts,
 } from "@/hooks/useApi";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import Image from "next/image";
 
 interface ProfileContentProps {

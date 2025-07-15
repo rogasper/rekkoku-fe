@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/auth";
 import Script from "next/script";
+import NextTopLoader from "nextjs-toploader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <NextTopLoader color="#EA7B26" showSpinner={false} zIndex={1000} />
         <Providers
           initialSession={isAuthenticated ? user : null}
           initialToken={sessionCookie || null}
@@ -54,11 +56,11 @@ export default async function RootLayout({
           {children}
         </Providers>
 
-        <Script
+        {/* <Script
           defer
           src="https://umami-analytic.rogasper.com/script.js"
           data-website-id="1b463dcf-3329-4d19-9586-704a1b84d0e2"
-        ></Script>
+        ></Script> */}
       </body>
     </html>
   );
