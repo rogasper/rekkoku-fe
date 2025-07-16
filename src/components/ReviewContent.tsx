@@ -277,7 +277,7 @@ const ReviewContent = ({ slug }: ReviewContentProps) => {
             {isCompleted && (
               <div className="flex gap-2">
                 {/* PENDING: add back later */}
-                {/* <Button
+                <Button
                   color="primary"
                   variant="bordered"
                   onPress={handleEdit}
@@ -285,7 +285,7 @@ const ReviewContent = ({ slug }: ReviewContentProps) => {
                   startContent={<Edit3 className="w-4 h-4" />}
                 >
                   Edit Post
-                </Button> */}
+                </Button>
                 <Button
                   color="primary"
                   className="bg-[#EA7B26] text-white"

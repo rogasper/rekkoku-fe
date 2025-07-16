@@ -174,7 +174,12 @@ export default function FloatingCreateButton() {
       {/* Create Post Modal */}
       <Modal
         isOpen={isOpen}
-        onOpenChange={onOpenChange}
+        onOpenChange={(open) => {
+          if (!open) {
+            reset();
+            onOpenChange();
+          }
+        }}
         isDismissable={false}
         backdrop="blur"
         size="2xl"
@@ -292,7 +297,14 @@ export default function FloatingCreateButton() {
                 </div>
               </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
+                <Button
+                  color="danger"
+                  variant="light"
+                  onPress={() => {
+                    reset();
+                    onClose();
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button

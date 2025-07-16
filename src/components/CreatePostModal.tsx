@@ -143,7 +143,12 @@ export default function CreatePostModal({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={onOpenChange}
+      onOpenChange={(open) => {
+        if (!open) {
+          reset();
+          onOpenChange(open);
+        }
+      }}
       isDismissable={false}
       backdrop="blur"
       size={"2xl"}
@@ -254,7 +259,14 @@ export default function CreatePostModal({
               </div>
             </ModalBody>
             <ModalFooter>
-              <Button color="danger" variant="light" onPress={onClose}>
+              <Button
+                color="danger"
+                variant="light"
+                onPress={() => {
+                  reset();
+                  onClose();
+                }}
+              >
                 Cancel
               </Button>
               <Button

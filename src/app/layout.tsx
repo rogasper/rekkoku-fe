@@ -56,11 +56,11 @@ export default async function RootLayout({
           {children}
         </Providers>
 
-        {/* <Script
+        <Script
           defer
           src="https://umami-analytic.rogasper.com/script.js"
           data-website-id="1b463dcf-3329-4d19-9586-704a1b84d0e2"
-        ></Script> */}
+        ></Script>
       </body>
     </html>
   );
