@@ -39,6 +39,8 @@ import {
 } from "@/utils/ui";
 import { POST_STATUS, ANIMATION_DELAYS } from "@/utils/constants";
 import { editPostAction } from "@/actions/action";
+import { queryKeys } from "@/lib/queryKeys";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProgressData {
   postId: string;
@@ -72,8 +74,10 @@ const ReviewContent = ({ slug }: ReviewContentProps) => {
   const router = useRouter();
   const { data, isLoading, refetch } = usePostBySlug(slug);
   const [animatedPlaces, setAnimatedPlaces] = useState<Set<number>>(new Set());
+  const [isLoadingPublish, setIsLoadingPublish] = useState(false);
   const postResponse = data?.data as Post;
   const postId = postResponse?.id;
+  const queryClient = useQueryClient();
 
   const [isProcessingComplete, setIsProcessingComplete] = useState(false);
   const [hasRefetchedAfterComplete, setHasRefetchedAfterComplete] =
@@ -163,7 +167,7 @@ const ReviewContent = ({ slug }: ReviewContentProps) => {
   }
 
   const handleBack = () => {
-    router.push("/");
+    router.push(`/detail/${slug}`);
   };
 
   const handleEdit = async () => {
@@ -172,13 +176,21 @@ const ReviewContent = ({ slug }: ReviewContentProps) => {
   };
 
   const handlePublish = () => {
+    setIsLoadingPublish(true);
     if (postId) {
       updatePostStatus(
         {
-          status: POST_STATUS.PUBLISHED,
+          status:
+            postResponse.status === POST_STATUS.PUBLISHED
+              ? POST_STATUS.DRAFT
+              : POST_STATUS.PUBLISHED,
         },
         {
           onSuccess: () => {
+            setIsLoadingPublish(false);
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.posts.bySlug(postResponse.slug),
+            });
             router.push(`/detail/${postResponse.slug}`);
           },
         }
@@ -221,7 +233,7 @@ const ReviewContent = ({ slug }: ReviewContentProps) => {
           onPress={handleBack}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Feed
+          Back to Detail
         </Button>
 
         <div className="absolute inset-0 bg-black/30 z-10 w-full h-full" />
@@ -292,8 +304,11 @@ const ReviewContent = ({ slug }: ReviewContentProps) => {
                   onPress={handlePublish}
                   startContent={<Globe className="w-4 h-4" />}
                   size="sm"
+                  isLoading={isLoadingPublish}
                 >
-                  Publish Post
+                  {postResponse.status === POST_STATUS.PUBLISHED
+                    ? "Unpublish Post"
+                    : "Publish Post"}
                 </Button>
               </div>
             )}

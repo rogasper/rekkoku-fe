@@ -66,6 +66,7 @@ export default function FloatingCreateButton() {
   const router = useRouter();
   const pathname = usePathname();
   const accessList = ["/", "/nearby", "/top-places"];
+  const [isLoadingSave, setIsLoadingSave] = useState(false);
 
   const {
     register,
@@ -96,6 +97,7 @@ export default function FloatingCreateButton() {
   const selectedCityId = watch("cityId");
 
   const onSubmit = async (data: any) => {
+    setIsLoadingSave(true);
     try {
       // Filter out empty URLs
       const filteredUrls = gmapsUrls.filter((url: string) => url.trim() !== "");
@@ -115,6 +117,7 @@ export default function FloatingCreateButton() {
           reset();
           setGmapsUrls([""]);
           onOpenChange();
+          setIsLoadingSave(false);
 
           // Redirect to review page with the post slug
           const postSlug = response?.data?.slug;
@@ -128,10 +131,12 @@ export default function FloatingCreateButton() {
             description: error.message,
             color: "danger",
           });
+          setIsLoadingSave(false);
         },
       });
     } catch (error) {
       console.error("Error creating post:", error);
+      setIsLoadingSave(false);
     }
   };
 
@@ -269,6 +274,8 @@ export default function FloatingCreateButton() {
                           classNames={{
                             input: "focus:outline-none",
                           }}
+                          isInvalid={!!errors.gmapsLinks?.[index]}
+                          errorMessage={errors.gmapsLinks?.[index]?.message}
                         />
                         {gmapsUrls.length > 1 && (
                           <Button
@@ -310,7 +317,7 @@ export default function FloatingCreateButton() {
                 <Button
                   color="primary"
                   type="submit"
-                  isLoading={isSubmitting}
+                  isLoading={isSubmitting || isLoadingSave}
                   className="bg-[#EA7B26] text-white"
                 >
                   Create Post

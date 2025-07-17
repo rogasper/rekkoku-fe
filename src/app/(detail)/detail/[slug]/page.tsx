@@ -11,6 +11,7 @@ import {
 } from "@/lib/server-api";
 import { formatRelativeTime } from "@/utils/dates";
 import { capitalizeWords } from "@/utils/strings";
+import { verifySession } from "@/lib/auth";
 
 interface DetailPageProps {
   params: Promise<{ slug: string }>;
@@ -129,6 +130,7 @@ export async function generateMetadata({
 }
 
 const DetailPage = async ({ params }: DetailPageProps) => {
+  const { user } = await verifySession();
   const { slug } = await params;
 
   // Fetch post data for JSON-LD
@@ -143,6 +145,10 @@ const DetailPage = async ({ params }: DetailPageProps) => {
         : "https://rekkoku.com";
     jsonLd = generatePostJsonLd(post, baseUrl);
   }
+
+  console.log("server post", post);
+
+  const isOwner = user?.userId === post?.userId;
 
   return (
     <>
@@ -159,7 +165,7 @@ const DetailPage = async ({ params }: DetailPageProps) => {
 
       <div className="max-w-[1024px] mx-auto sm:px-6 min-h-screen">
         <main className="mx-auto pb-24">
-          <DetailContent slug={slug} />
+          <DetailContent slug={slug} isOwner={isOwner} />
         </main>
       </div>
     </>

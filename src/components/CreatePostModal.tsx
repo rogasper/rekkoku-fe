@@ -60,6 +60,7 @@ export default function CreatePostModal({
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const router = useRouter();
+  const [isLoadingSave, setIsLoadingSave] = useState(false);
 
   const {
     register,
@@ -87,6 +88,7 @@ export default function CreatePostModal({
   const selectedCityId = watch("cityId");
 
   const onSubmit = async (data: any) => {
+    setIsLoadingSave(true);
     try {
       const filteredUrls = gmapsUrls.filter((url: string) => url.trim() !== "");
       const submitData = {
@@ -103,6 +105,7 @@ export default function CreatePostModal({
           reset();
           setGmapsUrls([""]);
           onOpenChange(false);
+          setIsLoadingSave(false);
           const postSlug = response?.data?.slug;
           if (onSuccess && postSlug) {
             onSuccess(postSlug);
@@ -116,10 +119,12 @@ export default function CreatePostModal({
             description: error.message,
             color: "danger",
           });
+          setIsLoadingSave(false);
         },
       });
     } catch (error) {
       console.error("Error creating post:", error);
+      setIsLoadingSave(false);
     }
   };
 
@@ -231,6 +236,8 @@ export default function CreatePostModal({
                         value={url}
                         onChange={(e) => updateGmapsUrl(index, e.target.value)}
                         className="flex-1"
+                        isInvalid={!!errors.gmapsLinks?.[index]}
+                        errorMessage={errors.gmapsLinks?.[index]?.message}
                       />
                       {gmapsUrls.length > 1 && (
                         <Button
@@ -272,7 +279,7 @@ export default function CreatePostModal({
               <Button
                 color="primary"
                 type="submit"
-                isLoading={isSubmitting}
+                isLoading={isSubmitting || isLoadingSave}
                 className="bg-[#EA7B26] text-white"
               >
                 Create Post
