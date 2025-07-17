@@ -53,6 +53,8 @@ export default function ClientAuthProvider({
     // Set initial auth state dari server sebagai fallback
     if (initialSession && initialToken) {
       setAuth(initialSession, initialToken);
+    } else {
+      setAuth(null, null);
     }
   }, [initialSession, initialToken, setAuth]);
 

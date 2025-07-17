@@ -66,15 +66,7 @@ export default function FloatingNavbar({
   const handleLogout = async () => {
     try {
       await logout();
-      router.push("/");
-      router.refresh();
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.lists() });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.posts.all,
-        predicate: (query) => {
-          return query.queryKey.includes("slug");
-        },
-      });
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout failed:", error);
     }

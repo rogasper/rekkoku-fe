@@ -1,8 +1,10 @@
 "use client";
 import { useTopUsers } from "@/hooks/useApi";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { Avatar, Card, CardBody, Chip, Skeleton } from "@heroui/react";
 import { Trophy, Heart, FileText, Crown, Medal, Award } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "nextjs-toploader/app";
 
 interface TopUser {
   id: string;
@@ -20,7 +22,8 @@ interface TopUsersSectionProps {
 
 export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
   const { data: topUsers, isLoading, error } = useTopUsers(limit);
-
+  const { withAuth } = useAuthGuard();
+  const router = useRouter();
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
@@ -95,6 +98,12 @@ export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
     );
   }
 
+  const handleUserClick = (username: string) => {
+    withAuth(() => {
+      router.push(`/u/${username}`);
+    });
+  };
+
   return (
     <Card className="w-full">
       <CardBody className="p-6">
@@ -105,10 +114,10 @@ export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
 
         <div className="space-y-4">
           {topUsers?.data?.map((user: TopUser) => (
-            <Link
+            <div
               key={user.id}
-              href={`/u/${user.username}`}
-              className="block hover:scale-[1.02] transition-transform"
+              onClick={() => handleUserClick(user.username)}
+              className="block hover:scale-[1.02] transition-transform cursor-pointer"
             >
               <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                 {/* Rank */}
@@ -167,7 +176,7 @@ export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
                   </div>
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
 

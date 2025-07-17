@@ -12,6 +12,7 @@ import type { Post } from "@/types/api";
 import { capitalizeWords } from "@/utils/strings";
 import { formatRelativeTime } from "@/utils/dates";
 import { getDefaultPostImage } from "@/utils/ui";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 interface DetailContentProps {
   slug: string;
@@ -21,6 +22,7 @@ interface DetailContentProps {
 const DetailContent = ({ slug, isOwner }: DetailContentProps) => {
   const router = useRouter();
   const { data, isLoading } = usePostBySlug(slug);
+  const { withAuth } = useAuthGuard();
 
   if (isLoading) return <DetailContentSkeleton />;
 
@@ -145,7 +147,9 @@ const DetailContent = ({ slug, isOwner }: DetailContentProps) => {
             src: postResponse.user.avatar,
           }}
           onClick={() => {
-            router.push(`/u/${postResponse.user.username}`);
+            withAuth(() => {
+              router.push(`/u/${postResponse.user.username}`);
+            });
           }}
           className="cursor-pointer"
         />

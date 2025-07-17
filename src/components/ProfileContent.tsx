@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "nextjs-toploader/app";
 import Image from "next/image";
+import AvatarPreviewModal from "./AvatarPreviewModal";
 
 interface ProfileContentProps {
   username: string;
@@ -25,6 +26,7 @@ interface ProfileContentProps {
 const ProfileContent = ({ username, isOwnProfile }: ProfileContentProps) => {
   const [selectedTab, setSelectedTab] = useState("posts");
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
+  const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
   const router = useRouter();
 
   // Get user profile by username
@@ -67,7 +69,6 @@ const ProfileContent = ({ username, isOwnProfile }: ProfileContentProps) => {
   } = useUserLikedPosts(userId || "");
 
   // Get user bookmarked posts
-  console.log("isOwnProfile:", isOwnProfile);
   const {
     data: bookmarkedPosts,
     isLoading: isBookmarkedLoading,
@@ -315,6 +316,7 @@ const ProfileContent = ({ username, isOwnProfile }: ProfileContentProps) => {
             <Avatar
               src={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`}
               className="w-20 h-20 sm:w-24 sm:h-24"
+              onClick={() => setAvatarPreviewOpen(true)}
             />
             <h1 className="text-xl sm:text-2xl font-bold text-center">
               {user.name || "Unknown User"}
@@ -496,6 +498,13 @@ const ProfileContent = ({ username, isOwnProfile }: ProfileContentProps) => {
       <DraftModal
         isOpen={isDraftModalOpen}
         onClose={() => setIsDraftModalOpen(false)}
+      />
+      <AvatarPreviewModal
+        isOpen={avatarPreviewOpen}
+        onOpenChange={setAvatarPreviewOpen}
+        avatarSrc={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`}
+        userName={user.name || "User"}
+        onChangePhoto={() => {}}
       />
     </>
   );
