@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "nextjs-toploader/app";
 import Image from "next/image";
 import AvatarPreviewModal from "./AvatarPreviewModal";
+import { formatNumber } from "@/utils";
 
 interface ProfileContentProps {
   username: string;
@@ -387,7 +388,7 @@ const ProfileContent = ({ username, isOwnProfile }: ProfileContentProps) => {
               <div className="flex items-center gap-1 sm:gap-2">
                 <Send className="w-4 h-4 sm:w-6 sm:h-6" />
                 <span className="text-sm sm:text-base font-medium">
-                  {isStatsLoading ? "-" : stats.postsCount || 0}
+                  {isStatsLoading ? "-" : formatNumber(stats.postsCount || 0)}
                 </span>
               </div>
               <span className="text-xs sm:text-sm text-gray-500">Posts</span>
@@ -396,7 +397,9 @@ const ProfileContent = ({ username, isOwnProfile }: ProfileContentProps) => {
               <div className="flex items-center gap-1 sm:gap-2">
                 <Heart className="w-4 h-4 sm:w-6 sm:h-6" />
                 <span className="text-sm sm:text-base font-medium">
-                  {isStatsLoading ? "-" : stats.likedPostsCount || 0}
+                  {isStatsLoading
+                    ? "-"
+                    : formatNumber(stats.likedPostsCount || 0)}
                 </span>
               </div>
               <span className="text-xs sm:text-sm text-gray-500">Tastes</span>
@@ -405,7 +408,9 @@ const ProfileContent = ({ username, isOwnProfile }: ProfileContentProps) => {
               <div className="flex items-center gap-1 sm:gap-2">
                 <Bookmark className="w-4 h-4 sm:w-6 sm:h-6" />
                 <span className="text-sm sm:text-base font-medium">
-                  {isStatsLoading ? "-" : stats.bookmarkedPostsCount || 0}
+                  {isStatsLoading
+                    ? "-"
+                    : formatNumber(stats.bookmarkedPostsCount || 0)}
                 </span>
               </div>
               <span className="text-xs sm:text-sm text-gray-500">Saved</span>

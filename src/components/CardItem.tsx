@@ -1,7 +1,7 @@
 "use client";
 import { useBookmarkPost, useLikePost } from "@/hooks/useApi";
 import { Post } from "@/types/api";
-import { capitalizeWords } from "@/utils/strings";
+import { capitalizeWords, formatNumber } from "@/utils/strings";
 import { Card, CardFooter, Image } from "@heroui/react";
 import { BookmarkIcon, HeartIcon, MapPinIcon, Share2Icon } from "lucide-react";
 import { useRouter } from "nextjs-toploader/app";
@@ -148,7 +148,7 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
                   isLikeAnimating ? "animate-pulse" : ""
                 }`}
               >
-                {post.likeCount}
+                {formatNumber(post.likeCount)}
               </span>
             </div>
             <div className="flex gap-1 items-center">
@@ -169,7 +169,7 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
                   isBookmarkAnimating ? "animate-pulse" : ""
                 }`}
               >
-                {post.bookmarksCount}
+                {formatNumber(post.bookmarksCount)}
               </span>
             </div>
             <div className="flex gap-1 items-center">

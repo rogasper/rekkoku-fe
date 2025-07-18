@@ -16,7 +16,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Tentang Rekkoku",
   description:
-    "Pelajari lebih lanjut tentang Rekkoku, platform untuk menemukan dan berbagi rekomendasi tempat dan perjalanan unik di seluruh Dunia.",
+    "Kenalan sama Rekkoku yuk! Platform kece buat nemuin dan sharing rekomendasi tempat hits plus perjalanan seru di seluruh Dunia.",
 };
 
 const AboutPage = () => {
@@ -40,10 +40,10 @@ const AboutPage = () => {
                 Share Your Taste!
               </h1>
               <p className="text-xl leading-relaxed text-gray-600 max-w-lg">
-                <span className="font-bold text-[#EA7B26]">Rekkoku</span> adalah
-                platform berbasis komunitas untuk berbagi dan menemukan
-                rekomendasi perjalanan dan tempat-tempat menarik, langsung dari
-                para penjelajah seperti Anda.
+                <span className="font-bold text-[#EA7B26]">Rekkoku</span> itu
+                platform komunitas yang super kece buat sharing dan nemuin
+                rekomendasi perjalanan plus tempat-tempat hits, langsung dari
+                para traveler keren kayak kamu!
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <div className="flex items-center gap-2 text-gray-600">
@@ -93,12 +93,12 @@ const AboutPage = () => {
               Fitur Unggulan
             </div>
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-6">
-              Apa yang Bisa Anda Lakukan di Rekkoku?
+              Apa Aja Sih yang Bisa Kamu Lakuin di Rekkoku?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Bergabunglah dengan komunitas travelers dan jelajahi berbagai
-              fitur menarik yang kami sediakan untuk pengalaman travel yang tak
-              terlupakan
+              Join sama komunitas travelers kece dan explore berbagai fitur seru
+              yang udah kita siapin buat pengalaman travel yang unforgettable
+              banget!
             </p>
           </div>
 
@@ -111,11 +111,11 @@ const AboutPage = () => {
                   <Share2 className="h-10 w-10 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors mb-4">
-                  Bagikan Petualanganmu
+                  Share Petualangan Kamu!
                 </h3>
                 <p className="text-gray-600 leading-relaxed text-lg">
-                  Buat dan publikasikan postingan perjalanan Anda dengan mudah,
-                  lengkap dengan daftar tempat, peta.
+                  Bikin dan post perjalanan kamu dengan gampang banget, lengkap
+                  sama list tempat kece dan map-nya juga!
                 </p>
               </div>
             </div>
@@ -128,11 +128,12 @@ const AboutPage = () => {
                   <Compass className="h-10 w-10 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 group-hover:text-green-700 transition-colors mb-4">
-                  Temukan Rekomendasi
+                  Discover Rekomendasi Hits!
                 </h3>
                 <p className="text-gray-600 leading-relaxed text-lg">
-                  Jelajahi ribuan rekomendasi dari pengguna lain, temukan tempat
-                  baru di sekitar Anda, atau cari berdasarkan kota tujuan.
+                  Explore ribuan rekomendasi dari user lain, nemuin tempat baru
+                  di sekitar kamu, atau search based on kota tujuan yang kamu
+                  mau!
                 </p>
               </div>
             </div>
@@ -145,11 +146,11 @@ const AboutPage = () => {
                   <Heart className="h-10 w-10 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 group-hover:text-red-700 transition-colors mb-4">
-                  Simpan & Personalisasi
+                  Save & Customize!
                 </h3>
                 <p className="text-gray-600 leading-relaxed text-lg">
-                  Sukai dan simpan (bookmark) postingan favorit Anda untuk
-                  merencanakan perjalanan Anda di masa depan.
+                  Like dan bookmark postingan favorit kamu buat planning
+                  perjalanan seru di masa depan. It's that simple!
                 </p>
               </div>
             </div>
@@ -170,11 +171,11 @@ const AboutPage = () => {
                 Hubungi Kami
               </div>
               <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-                Ada Pertanyaan atau Saran?
+                Ada Pertanyaan atau Saran Kece?
               </h2>
               <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-                Tim kami siap membantu Anda. Jangan ragu untuk menghubungi kami
-                untuk pertanyaan, feedback, atau kolaborasi.
+                Tim kita siap bantu kamu! Jangan sungkan buat contact kita untuk
+                pertanyaan, feedback, atau kalo mau kolaborasi bareng.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                 <a
@@ -185,7 +186,7 @@ const AboutPage = () => {
                   admin@rogasper.com
                 </a>
                 <div className="text-gray-400 text-sm">
-                  Atau kirim pesan langsung melalui platform media sosial kami
+                  Atau DM kita langsung lewat platform media sosial kita aja!
                 </div>
               </div>
             </div>
@@ -214,11 +215,11 @@ const AboutPage = () => {
 
             <div className="relative z-10">
               <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-                Siap untuk Menjelajah?
+                Ready Buat Explore?
               </h2>
               <p className="text-xl text-orange-100 mb-10 max-w-2xl mx-auto leading-relaxed">
-                Bergabunglah dengan komunitas Rekkoku hari ini dan mulailah
-                berbagi serta menemukan permata tersembunyi di Seluruh Dunia.
+                Join komunitas Rekkoku sekarang juga dan mulai sharing plus
+                discovering hidden gems yang super kece di Seluruh Dunia!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link

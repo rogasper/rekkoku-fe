@@ -20,12 +20,7 @@ import { City } from "@/types/api";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRouter } from "nextjs-toploader/app";
 import { UI_CONSTANTS, DEFAULTS } from "@/utils/constants";
-
-const isValidGmapsLink = (url: string): boolean => {
-  const gmapsPattern =
-    /(https?:\/\/(www\.)?(google\.com\/maps|goo\.gl\/maps|maps\.app\.goo\.gl)\/[^\s]+)/;
-  return gmapsPattern.test(url);
-};
+import { isValidGmapsLink } from "@/utils/strings";
 
 const MAX_GMAPS_LINKS = UI_CONSTANTS.MAX_GMAPS_LINKS;
 

@@ -5,6 +5,7 @@ import { Avatar, Card, CardBody, Chip, Skeleton } from "@heroui/react";
 import { Trophy, Heart, FileText, Crown, Medal, Award } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "nextjs-toploader/app";
+import { formatNumber } from "@/utils";
 
 interface TopUser {
   id: string;
@@ -155,11 +156,15 @@ export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
                   <div className="flex flex-row sm:hidden gap-2 text-sm">
                     <div className="flex items-center gap-1 text-red-500">
                       <Heart className="w-4 h-4" />
-                      <span className="font-medium">{user.totalLikes}</span>
+                      <span className="font-medium">
+                        {formatNumber(user.totalLikes)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1 text-gray-600">
                       <FileText className="w-4 h-4" />
-                      <span className="font-medium">{user.totalPosts}</span>
+                      <span className="font-medium">
+                        {formatNumber(user.totalPosts)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -168,11 +173,15 @@ export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
                 <div className="hidden sm:flex sm:flex-row gap-2 text-sm">
                   <div className="flex items-center gap-1 text-red-500">
                     <Heart className="w-4 h-4" />
-                    <span className="font-medium">{user.totalLikes}</span>
+                    <span className="font-medium">
+                      {formatNumber(user.totalLikes)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1 text-gray-600">
                     <FileText className="w-4 h-4" />
-                    <span className="font-medium">{user.totalPosts}</span>
+                    <span className="font-medium">
+                      {formatNumber(user.totalPosts)}
+                    </span>
                   </div>
                 </div>
               </div>

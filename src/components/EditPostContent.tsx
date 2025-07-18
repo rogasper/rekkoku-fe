@@ -13,13 +13,7 @@ import type { Post, City } from "@/types/api";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getDefaultPostImage } from "@/utils/ui";
 import { UI_CONSTANTS, DEFAULTS } from "@/utils/constants";
-
-// Helper function to validate Google Maps links
-const isValidGmapsLink = (url: string): boolean => {
-  const gmapsPattern =
-    /(https?:\/\/(www\.)?(google\.com\/maps|goo\.gl\/maps|maps\.app\.goo\.gl)\/[^\s]+)/;
-  return gmapsPattern.test(url);
-};
+import { isValidGmapsLink } from "@/utils";
 
 const MAX_GMAPS_LINKS = UI_CONSTANTS.MAX_GMAPS_LINKS;
 

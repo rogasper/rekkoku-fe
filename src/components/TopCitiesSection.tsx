@@ -1,6 +1,6 @@
 "use client";
 import { useTopCities } from "@/hooks/useApi";
-import { capitalizeWords } from "@/utils";
+import { capitalizeWords, formatNumber } from "@/utils";
 import { Card, CardBody, Chip, Skeleton } from "@heroui/react";
 import { MapPin, FileText, Heart, Crown, Medal, Award } from "lucide-react";
 import Link from "next/link";
@@ -138,12 +138,16 @@ export default function TopCitiesSection({ limit = 5 }: TopCitiesSectionProps) {
                 <div className="flex flex-row sm:hidden gap-2 text-sm">
                   <div className="flex items-center gap-1 text-gray-600">
                     <FileText className="w-4 h-4" />
-                    <span className="font-medium">{city.totalPosts}</span>
+                    <span className="font-medium">
+                      {formatNumber(city.totalPosts)}
+                    </span>
                     <span className="text-xs text-gray-400">posts</span>
                   </div>
                   <div className="flex items-center gap-1 text-red-500">
                     <Heart className="w-4 h-4" />
-                    <span className="font-medium">{city.totalLikes}</span>
+                    <span className="font-medium">
+                      {formatNumber(city.totalLikes)}
+                    </span>
                     <span className="text-xs text-gray-400">likes</span>
                   </div>
                 </div>
@@ -153,12 +157,16 @@ export default function TopCitiesSection({ limit = 5 }: TopCitiesSectionProps) {
               <div className="hidden sm:flex sm:flex-row gap-2 text-sm">
                 <div className="flex items-center gap-1 text-gray-600">
                   <FileText className="w-4 h-4" />
-                  <span className="font-medium">{city.totalPosts}</span>
+                  <span className="font-medium">
+                    {formatNumber(city.totalPosts)}
+                  </span>
                   <span className="text-xs text-gray-400">posts</span>
                 </div>
                 <div className="flex items-center gap-1 text-red-500">
                   <Heart className="w-4 h-4" />
-                  <span className="font-medium">{city.totalLikes}</span>
+                  <span className="font-medium">
+                    {formatNumber(city.totalLikes)}
+                  </span>
                   <span className="text-xs text-gray-400">likes</span>
                 </div>
               </div>

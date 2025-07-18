@@ -24,13 +24,7 @@ import { useRouter } from "nextjs-toploader/app";
 import { UI_CONSTANTS, POST_STATUS, DEFAULTS } from "@/utils/constants";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { useAuth } from "@/hooks/useAuth";
-
-// Helper function to validate Google Maps links
-const isValidGmapsLink = (url: string): boolean => {
-  const gmapsPattern =
-    /(https?:\/\/(www\.)?(google\.com\/maps|goo\.gl\/maps|maps\.app\.goo\.gl)\/[^\s]+)/;
-  return gmapsPattern.test(url);
-};
+import { isValidGmapsLink } from "@/utils/strings";
 
 const MAX_GMAPS_LINKS = UI_CONSTANTS.MAX_GMAPS_LINKS;
 

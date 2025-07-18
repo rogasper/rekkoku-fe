@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { capitalizeWords } from "@/utils";
+import { capitalizeWords, formatNumber } from "@/utils";
 
 interface TopPost {
   id: string;
@@ -202,16 +202,20 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                   <div className="flex gap-3 text-sm">
                     <div className="flex items-center gap-1 text-red-500">
                       <Heart className="w-4 h-4" />
-                      <span className="font-medium">{post.totalLikes}</span>
+                      <span className="font-medium">
+                        {formatNumber(post.totalLikes)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1 text-blue-500">
                       <Bookmark className="w-4 h-4" />
-                      <span className="font-medium">{post.totalBookmarks}</span>
+                      <span className="font-medium">
+                        {formatNumber(post.totalBookmarks)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1 text-green-500">
                       <TrendingUp className="w-4 h-4" />
                       <span className="font-medium">
-                        {post.totalEngagement}
+                        {formatNumber(post.totalEngagement)}
                       </span>
                     </div>
                   </div>

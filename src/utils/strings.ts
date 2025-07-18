@@ -15,3 +15,27 @@ export function capitalizeWords(sentence: string) {
   // Join the capitalized words back into a single string
   return capitalizedWords.join(" ");
 }
+
+export const isValidGmapsLink = (url: string): boolean => {
+  const gmapsPattern =
+    /(https?:\/\/(www\.)?(google\.com\/maps|goo\.gl\/maps|maps\.app\.goo\.gl|g\.co)\/[^\s]+)/;
+  return gmapsPattern.test(url);
+};
+
+// handle thousands, millions, billions, etc.
+export const formatNumber = (number: number) => {
+  const units = ["", "K", "M", "B", "T", "Q"];
+  const unitSize = 1000;
+
+  // Find the appropriate unit
+  let unitIndex = 0;
+  let value = number;
+  while (value >= unitSize && unitIndex < units.length - 1) {
+    value /= unitSize;
+    unitIndex++;
+  }
+
+  // Format with one decimal place if needed, otherwise as integer
+  const formatted = unitIndex === 0 ? value.toString() : value.toFixed(1);
+  return formatted + units[unitIndex];
+};

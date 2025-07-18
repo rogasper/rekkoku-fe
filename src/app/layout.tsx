@@ -25,6 +25,26 @@ export const metadata: Metadata = {
   title: "Rekkoku | Rekomendasi dari Aku",
   description:
     "Rekkoku is a platform to share your taste in food, places, and experiences.",
+  openGraph: {
+    title: "Rekkoku | Rekomendasi dari Aku",
+    description:
+      "Rekkoku is a platform to share your taste in food, places, and experiences.",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Rekkoku",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Rekkoku | Rekomendasi dari Aku",
+    description:
+      "Rekkoku is a platform to share your taste in food, places, and experiences.",
+    images: ["/og.png"],
+  },
 };
 
 export const viewport: Viewport = {
@@ -56,11 +76,11 @@ export default async function RootLayout({
           {children}
         </Providers>
 
-        <Script
+        {/* <Script
           defer
           src="https://umami-analytic.rogasper.com/script.js"
           data-website-id="1b463dcf-3329-4d19-9586-704a1b84d0e2"
-        ></Script>
+        ></Script> */}
       </body>
     </html>
   );
