@@ -6,11 +6,18 @@ import { getCookie } from "@/lib/cookies";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getQueryClient } from "@/app/get-query-client";
 import { queryKeys } from "@/lib/queryKeys";
+import { Metadata } from "next";
 
 interface EditPageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ from?: string }>;
 }
+
+export const metadata: Metadata = {
+  other: {
+    google: "notranslate",
+  },
+};
 
 const getPost = async (slug: string, token: string) => {
   const post = await fetch(
@@ -32,15 +39,9 @@ export default async function EditPage({
   searchParams,
 }: EditPageProps) {
   await requireAuth();
-  const queryClient = getQueryClient();
   const token = await getCookie("session");
   const { slug } = await params;
   const { from } = await searchParams;
-
-  await queryClient.prefetchQuery({
-    queryKey: queryKeys.posts.bySlug(slug),
-    queryFn: () => getPost(slug, token || ""),
-  });
 
   const post = await getPost(slug, token || "").catch(() => notFound());
 
@@ -52,10 +53,10 @@ export default async function EditPage({
   }
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl">
-      <HydrationBoundary state={dehydrate(queryClient)}>
+    <div className="max-w-[1024px] mx-auto sm:px-6 min-h-screen">
+      <main className="mx-auto pb-24">
         <EditPostContent slug={slug} post={post.data} />
-      </HydrationBoundary>
+      </main>
     </div>
   );
 }

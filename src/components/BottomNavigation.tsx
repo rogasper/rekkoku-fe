@@ -14,28 +14,31 @@ import {
   PlusIcon,
   UserIcon,
 } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
-import { AuthSession } from "@/lib/auth";
+import { useRouter } from "nextjs-toploader/app";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import CreatePostModal from "./CreatePostModal";
+import useUser from "@/store/useUser";
 
 interface BottomNavigationProps {
-  user: AuthSession | null;
+  isAuthenticated: boolean;
 }
 
-export default function BottomNavigation({ user }: BottomNavigationProps) {
+export default function BottomNavigation({
+  isAuthenticated,
+}: BottomNavigationProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { openLoginModal } = useAuthModal();
-
+  const user = useUser((state) => state.user);
   const handleNavigation = (
     path: string,
     requiresAuth: boolean = false,
     isCreate: boolean = false
   ) => {
-    if (requiresAuth && !user) {
+    if (requiresAuth && !isAuthenticated) {
       openLoginModal();
       return;
     }
@@ -85,6 +88,14 @@ export default function BottomNavigation({ user }: BottomNavigationProps) {
       isCreate: false,
     },
   ];
+
+  if (
+    pathname.startsWith("/detail") ||
+    pathname.startsWith("/edit") ||
+    pathname.startsWith("/review")
+  ) {
+    return null;
+  }
 
   return (
     <>

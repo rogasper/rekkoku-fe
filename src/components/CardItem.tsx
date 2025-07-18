@@ -1,10 +1,10 @@
 "use client";
 import { useBookmarkPost, useLikePost } from "@/hooks/useApi";
 import { Post } from "@/types/api";
-import { capitalizeWords } from "@/utils/strings";
+import { capitalizeWords, formatNumber } from "@/utils/strings";
 import { Card, CardFooter, Image } from "@heroui/react";
 import { BookmarkIcon, HeartIcon, MapPinIcon, Share2Icon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import React, { useState } from "react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 
@@ -50,6 +50,16 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
       setTimeout(() => setIsBookmarkAnimating(false), 300);
 
       bookmarkPost(post.id);
+    });
+  };
+
+  const handleSharePost = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `/detail/${post.slug}`;
+    navigator.share({
+      title: post.title,
+      text: post.user.username,
+      url: url,
     });
   };
 
@@ -138,7 +148,7 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
                   isLikeAnimating ? "animate-pulse" : ""
                 }`}
               >
-                {post.likeCount}
+                {formatNumber(post.likeCount)}
               </span>
             </div>
             <div className="flex gap-1 items-center">
@@ -159,13 +169,13 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
                   isBookmarkAnimating ? "animate-pulse" : ""
                 }`}
               >
-                {post.bookmarksCount}
+                {formatNumber(post.bookmarksCount)}
               </span>
             </div>
             <div className="flex gap-1 items-center">
               <Share2Icon
                 className={`w-5 h-5 cursor-pointer transition-all duration-200 ease-out hover:scale-110 text-white fill-white`}
-                onClick={handleBookmarkPost}
+                onClick={handleSharePost}
               />
             </div>
           </div>

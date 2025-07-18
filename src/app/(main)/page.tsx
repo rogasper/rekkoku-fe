@@ -1,4 +1,71 @@
 import HomeContent from "@/components/HomeContent";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Rekkoku | Rekomendasi dari Aku - Travel Guide Indonesia",
+  description:
+    "Temukan dan bagikan rekomendasi tempat wisata, kuliner, dan destinasi terbaik di Indonesia. Platform travel guide berbasis komunitas untuk mengeksplorasi keindahan Nusantara.",
+  keywords: [
+    "travel guide Indonesia",
+    "rekomendasi tempat wisata",
+    "rekomendasi makanan murah",
+    "kuliner Indonesia",
+    "destinasi wisata",
+    "tempat menarik Indonesia",
+    "travel blog",
+    "wisata lokal",
+    "kuliner nusantara",
+    "jalan-jalan Indonesia",
+  ].join(", "),
+  authors: [{ name: "Rekkoku Team" }],
+  creator: "Rekkoku",
+  publisher: "Rekkoku",
+  robots: "index,follow",
+
+  // Open Graph
+  openGraph: {
+    type: "website",
+    title: "Rekkoku | Rekomendasi dari Aku - Travel Guide Indonesia",
+    description:
+      "Temukan dan bagikan rekomendasi tempat wisata, kuliner, dan destinasi terbaik di Indonesia.",
+    url: "/",
+    siteName: "Rekkoku",
+    images: [
+      {
+        url: "/android-chrome-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "Rekkoku - Travel Guide Indonesia",
+      },
+    ],
+    locale: "id_ID",
+  },
+
+  // Twitter Card
+  twitter: {
+    card: "summary_large_image",
+    title: "Rekkoku | Rekomendasi dari Aku",
+    description:
+      "Platform travel guide Indonesia untuk berbagi rekomendasi tempat wisata dan kuliner terbaik.",
+    images: ["/android-chrome-512x512.png"],
+    site: "@rekkoku",
+  },
+
+  // Additional metadata
+  alternates: {
+    canonical: "/",
+  },
+
+  // Application metadata
+  other: {
+    "theme-color": "#f97316",
+    "application-name": "Rekkoku",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-title": "Rekkoku",
+    "mobile-web-app-capable": "yes",
+  },
+};
 
 interface HomePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

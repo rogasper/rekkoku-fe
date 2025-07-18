@@ -19,17 +19,12 @@ import { useState } from "react";
 import { useCities, useCreatePost } from "@/hooks/useApi";
 import { City } from "@/types/api";
 import { useDebounce } from "@/hooks/use-debounce";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { UI_CONSTANTS, POST_STATUS, DEFAULTS } from "@/utils/constants";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { useAuth } from "@/hooks/useAuth";
-
-// Helper function to validate Google Maps links
-const isValidGmapsLink = (url: string): boolean => {
-  const gmapsPattern =
-    /(https?:\/\/(www\.)?(google\.com\/maps|goo\.gl\/maps|maps\.app\.goo\.gl)\/[^\s]+)/;
-  return gmapsPattern.test(url);
-};
+import { isValidGmapsLink } from "@/utils/strings";
 
 const MAX_GMAPS_LINKS = UI_CONSTANTS.MAX_GMAPS_LINKS;
 
@@ -65,6 +60,7 @@ export default function FloatingCreateButton() {
   const router = useRouter();
   const pathname = usePathname();
   const accessList = ["/", "/nearby", "/top-places"];
+  const [isLoadingSave, setIsLoadingSave] = useState(false);
 
   const {
     register,
@@ -95,6 +91,7 @@ export default function FloatingCreateButton() {
   const selectedCityId = watch("cityId");
 
   const onSubmit = async (data: any) => {
+    setIsLoadingSave(true);
     try {
       // Filter out empty URLs
       const filteredUrls = gmapsUrls.filter((url: string) => url.trim() !== "");
@@ -114,6 +111,7 @@ export default function FloatingCreateButton() {
           reset();
           setGmapsUrls([""]);
           onOpenChange();
+          setIsLoadingSave(false);
 
           // Redirect to review page with the post slug
           const postSlug = response?.data?.slug;
@@ -127,10 +125,12 @@ export default function FloatingCreateButton() {
             description: error.message,
             color: "danger",
           });
+          setIsLoadingSave(false);
         },
       });
     } catch (error) {
       console.error("Error creating post:", error);
+      setIsLoadingSave(false);
     }
   };
 
@@ -173,7 +173,12 @@ export default function FloatingCreateButton() {
       {/* Create Post Modal */}
       <Modal
         isOpen={isOpen}
-        onOpenChange={onOpenChange}
+        onOpenChange={(open) => {
+          if (!open) {
+            reset();
+            onOpenChange();
+          }
+        }}
         isDismissable={false}
         backdrop="blur"
         size="2xl"
@@ -196,6 +201,9 @@ export default function FloatingCreateButton() {
                   <Input
                     placeholder="Enter post title"
                     variant="bordered"
+                    classNames={{
+                      input: "focus:outline-none",
+                    }}
                     isRequired
                     {...register("title")}
                     errorMessage={errors.title?.message}
@@ -221,6 +229,11 @@ export default function FloatingCreateButton() {
                     }}
                     onInputChange={(value: string) => {
                       setSearch(value);
+                    }}
+                    listboxProps={{
+                      emptyContent: isLoadingCities
+                        ? "Loading..."
+                        : "No cities found",
                     }}
                     errorMessage={errors.cityId?.message}
                     isInvalid={!!errors.cityId}
@@ -252,6 +265,11 @@ export default function FloatingCreateButton() {
                             updateGmapsUrl(index, e.target.value)
                           }
                           className="flex-1"
+                          classNames={{
+                            input: "focus:outline-none",
+                          }}
+                          isInvalid={!!errors.gmapsLinks?.[index]}
+                          errorMessage={errors.gmapsLinks?.[index]?.message}
                         />
                         {gmapsUrls.length > 1 && (
                           <Button
@@ -280,13 +298,20 @@ export default function FloatingCreateButton() {
                 </div>
               </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
+                <Button
+                  color="danger"
+                  variant="light"
+                  onPress={() => {
+                    reset();
+                    onClose();
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button
                   color="primary"
                   type="submit"
-                  isLoading={isSubmitting}
+                  isLoading={isSubmitting || isLoadingSave}
                   className="bg-[#EA7B26] text-white"
                 >
                   Create Post

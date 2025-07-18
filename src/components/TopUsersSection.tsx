@@ -1,8 +1,11 @@
 "use client";
 import { useTopUsers } from "@/hooks/useApi";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { Avatar, Card, CardBody, Chip, Skeleton } from "@heroui/react";
 import { Trophy, Heart, FileText, Crown, Medal, Award } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "nextjs-toploader/app";
+import { formatNumber } from "@/utils";
 
 interface TopUser {
   id: string;
@@ -20,7 +23,8 @@ interface TopUsersSectionProps {
 
 export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
   const { data: topUsers, isLoading, error } = useTopUsers(limit);
-
+  const { withAuth } = useAuthGuard();
+  const router = useRouter();
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
@@ -95,6 +99,12 @@ export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
     );
   }
 
+  const handleUserClick = (username: string) => {
+    withAuth(() => {
+      router.push(`/u/${username}`);
+    });
+  };
+
   return (
     <Card className="w-full">
       <CardBody className="p-6">
@@ -105,10 +115,10 @@ export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
 
         <div className="space-y-4">
           {topUsers?.data?.map((user: TopUser) => (
-            <Link
+            <div
               key={user.id}
-              href={`/u/${user.username}`}
-              className="block hover:scale-[1.02] transition-transform"
+              onClick={() => handleUserClick(user.username)}
+              className="block hover:scale-[1.02] transition-transform cursor-pointer"
             >
               <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                 {/* Rank */}
@@ -121,13 +131,13 @@ export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
                   src={user.avatar || undefined}
                   name={user.name}
                   size="lg"
-                  className="ring-2 ring-[#EA7B26]/20"
+                  className="ring-2 ring-[#EA7B26]/20 sm:w-12 sm:h-12 w-10 h-10"
                 />
 
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-900 truncate">
+                    <h3 className="font-semibold text-gray-900 truncate sm:text-lg text-sm">
                       {user.name}
                     </h3>
                     {user.rank <= 3 && (
@@ -140,22 +150,42 @@ export default function TopUsersSection({ limit = 5 }: TopUsersSectionProps) {
                       </Chip>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500">@{user.username}</p>
+                  <p className="text-sm text-gray-500 mb-1 sm:text-base">
+                    @{user.username}
+                  </p>
+                  <div className="flex flex-row sm:hidden gap-2 text-sm">
+                    <div className="flex items-center gap-1 text-red-500">
+                      <Heart className="w-4 h-4" />
+                      <span className="font-medium">
+                        {formatNumber(user.totalLikes)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-gray-600">
+                      <FileText className="w-4 h-4" />
+                      <span className="font-medium">
+                        {formatNumber(user.totalPosts)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Stats */}
-                <div className="flex flex-col sm:flex-row gap-2 text-sm">
+                <div className="hidden sm:flex sm:flex-row gap-2 text-sm">
                   <div className="flex items-center gap-1 text-red-500">
                     <Heart className="w-4 h-4" />
-                    <span className="font-medium">{user.totalLikes}</span>
+                    <span className="font-medium">
+                      {formatNumber(user.totalLikes)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1 text-gray-600">
                     <FileText className="w-4 h-4" />
-                    <span className="font-medium">{user.totalPosts}</span>
+                    <span className="font-medium">
+                      {formatNumber(user.totalPosts)}
+                    </span>
                   </div>
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
 

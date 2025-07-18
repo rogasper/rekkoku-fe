@@ -31,11 +31,12 @@ import {
   useCheckUsername,
   useUsernameSuggestions,
 } from "@/hooks/useApi";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import ImageCropModal from "@/components/ImageCropModal";
 import AvatarPreviewModal from "@/components/AvatarPreviewModal";
 import { useDebounce } from "@/hooks/use-debounce";
 import { logout } from "@/actions/logout";
+import useUser from "@/store/useUser";
 
 // Zod schema for form validation
 const settingsSchema = z.object({
@@ -479,7 +480,10 @@ const SettingsPage = () => {
             variant="solid"
             color="danger"
             onPress={() => {
+              const { clearAuth } = useUser.getState();
+              clearAuth();
               logout();
+              window.location.href = "/";
             }}
           >
             Logout

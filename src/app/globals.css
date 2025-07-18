@@ -97,3 +97,27 @@ body {
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
+
+/* Prevent Google Translate from interfering with React components */
+.notranslate {
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Additional protection for dynamic content */
+[data-react-component] {
+  transform: translateZ(0);
+}
+
+/* Prevent translate on specific form elements */
+input,
+textarea,
+select {
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
+}

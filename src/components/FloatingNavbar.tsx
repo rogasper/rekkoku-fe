@@ -17,10 +17,11 @@ import Image from "next/image";
 import { useEffect } from "react";
 import useUser from "@/store/useUser";
 import { AuthSession } from "@/lib/auth";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { logout } from "@/actions/logout";
 import {
   BellDotIcon,
+  InfoIcon,
   LogOutIcon,
   SearchIcon,
   SettingsIcon,
@@ -31,17 +32,15 @@ import { queryKeys } from "@/lib/queryKeys";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 
 interface FloatingNavbarProps {
-  user: AuthSession | null;
+  isAuthenticated: boolean;
 }
 
-export default function FloatingNavbar({ user }: FloatingNavbarProps) {
-  const setUser = useUser((state) => state.setUser);
+export default function FloatingNavbar({
+  isAuthenticated,
+}: FloatingNavbarProps) {
+  const user = useUser((state) => state.user);
   const queryClient = useQueryClient();
   const { openLoginModal } = useAuthModal();
-
-  useEffect(() => {
-    setUser(user);
-  }, [user, setUser]);
 
   const router = useRouter();
 
@@ -52,6 +51,9 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
         break;
       case "settings":
         router.push("/settings");
+        break;
+      case "about":
+        router.push("/about");
         break;
       case "logout":
         handleLogout();
@@ -64,15 +66,7 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
   const handleLogout = async () => {
     try {
       await logout();
-      router.push("/");
-      router.refresh();
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.lists() });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.posts.all,
-        predicate: (query) => {
-          return query.queryKey.includes("slug");
-        },
-      });
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -110,7 +104,7 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
             >
               <SearchIcon className="w-5 h-5" color="#EA7B26" />
             </Button>
-            {user && (
+            {isAuthenticated && (
               <Button
                 onPress={() => router.push("/notifications")}
                 className="bg-transparent hover:bg-transparent hover:text-white text-white font-semibold"
@@ -122,7 +116,7 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
               </Button>
             )}
           </div>
-          {user ? (
+          {isAuthenticated ? (
             <NavbarItem>
               {/* Desktop: Avatar with Dropdown Menu */}
               <div className="hidden lg:block">
@@ -134,8 +128,8 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
                       classNames={{
                         base: "border-2 border-[#EA7B26]",
                       }}
-                      name={user.name}
-                      src={user.avatar}
+                      name={user?.name}
+                      src={user?.avatar}
                     />
                   </DropdownTrigger>
                   <DropdownMenu
@@ -153,6 +147,12 @@ export default function FloatingNavbar({ user }: FloatingNavbarProps) {
                       <div className="flex items-center gap-2">
                         <SettingsIcon className="w-4 h-4" />
                         <span>Settings</span>
+                      </div>
+                    </DropdownItem>
+                    <DropdownItem key="about">
+                      <div className="flex items-center gap-2">
+                        <InfoIcon className="w-4 h-4" />
+                        <span>About</span>
                       </div>
                     </DropdownItem>
                     <DropdownItem key="logout" color="danger">

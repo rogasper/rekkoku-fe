@@ -55,11 +55,11 @@ const ListCardItem = ({ place, postId }: ListCardItemProps) => {
               <div className="mt-auto pt-3">
                 <Button
                   variant="bordered"
-                  size="sm"
+                  size="lg"
                   onPress={() => window.open(place.gmapsLink, "_blank")}
                   className="w-full sm:w-auto text-sm"
+                  startContent={<ExternalLink className="w-4 h-4" />}
                 >
-                  <ExternalLink className="w-4 h-4 mr-2" />
                   Open in Google Maps
                 </Button>
               </div>

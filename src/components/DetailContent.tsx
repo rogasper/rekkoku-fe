@@ -3,25 +3,26 @@
 import React from "react";
 import { Button, Divider, User, Image } from "@heroui/react";
 import ListCardItem from "@/components/ListCardItem";
-import { ArrowLeft, Clock, Lock } from "lucide-react";
+import { ArrowLeft, Clock, Edit3, Lock, Pencil } from "lucide-react";
 import DockingFloat from "./DockingFloat";
 import DetailContentSkeleton from "./DetailContentSkeleton";
-import { useBookmarkPost, useLikePost, usePostBySlug } from "@/hooks/useApi";
-import { useRouter } from "next/navigation";
-import type { Post, PostDetailResponse } from "@/types/api";
+import { usePostBySlug } from "@/hooks/useApi";
+import { useRouter } from "nextjs-toploader/app";
+import type { Post } from "@/types/api";
 import { capitalizeWords } from "@/utils/strings";
 import { formatRelativeTime } from "@/utils/dates";
 import { getDefaultPostImage } from "@/utils/ui";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 interface DetailContentProps {
   slug: string;
+  isOwner: boolean;
 }
 
-const DetailContent = ({ slug }: DetailContentProps) => {
+const DetailContent = ({ slug, isOwner }: DetailContentProps) => {
   const router = useRouter();
   const { data, isLoading } = usePostBySlug(slug);
-  const { user: currentUser, checkOwnership } = useAuth();
+  const { withAuth } = useAuthGuard();
 
   if (isLoading) return <DetailContentSkeleton />;
 
@@ -33,7 +34,6 @@ const DetailContent = ({ slug }: DetailContentProps) => {
 
   // Access Control: Check if post is published or user is owner
   const isPublished = postResponse.status === "PUBLISHED";
-  const isOwner = checkOwnership(postResponse.userId);
 
   if (!isPublished && !isOwner) {
     return (
@@ -60,7 +60,11 @@ const DetailContent = ({ slug }: DetailContentProps) => {
   }
 
   const handleBack = () => {
-    router.back();
+    router.push("/");
+  };
+
+  const handleEdit = () => {
+    router.push(`/review/${slug}?from=review`);
   };
 
   return (
@@ -88,22 +92,48 @@ const DetailContent = ({ slug }: DetailContentProps) => {
           height={667}
           className="w-full h-full object-cover absolute top-0 left-0"
         />
-        <Button
-          variant="light"
-          size="sm"
-          className="hover:bg-orange-50 absolute top-4 left-4 z-11 text-white text-lg"
-          onPress={handleBack}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Feed
-        </Button>
+        <div className="absolute top-4 left-4 right-4 z-11 flex gap-2 justify-between">
+          {isOwner && (
+            <Button
+              variant="bordered"
+              size="sm"
+              className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 w-fit flex sm:hidden sm:w-auto order-1 sm:order-2 rounded-full"
+              onPress={handleEdit}
+              isIconOnly
+            >
+              <Edit3 className="w-4 h-4" />
+            </Button>
+          )}
+          <Button
+            variant="light"
+            size="sm"
+            className="hover:bg-orange-50 text-white text-lg"
+            onPress={handleBack}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Feed
+          </Button>
+        </div>
         <div className="absolute inset-0 bg-black/30 z-10 w-full h-full" />
-        <div className="absolute bottom-6 left-6 right-6 z-11 flex flex-col gap-2">
+        <div className="absolute bottom-6 left-6 right-6 z-11 flex flex-col gap-3">
           <h1 className="text-3xl font-bold text-white mb-2 line-clamp-2 md:line-clamp-none">
             {postResponse.title}
           </h1>
-          <div className="before:bg-white/10 border-white/30 border-1 backdrop-blur-sm text-white shadow-small px-4 py-2 rounded-full md:w-1/4 justify-center items-center flex w-full">
-            {postResponse.postPlaces.length} amazing places
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {isOwner && (
+              <Button
+                variant="bordered"
+                size="sm"
+                className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 w-full hidden sm:flex sm:w-auto order-1 sm:order-2 rounded-full"
+                onPress={handleEdit}
+                isIconOnly
+              >
+                <Edit3 className="w-4 h-4" />
+              </Button>
+            )}
+            <div className="before:bg-white/10 border-white/30 border-1 backdrop-blur-sm text-white shadow-small px-4 py-2 rounded-full md:w-1/4 justify-center items-center flex w-full sm:order-1 order-2 sm:w-auto">
+              {postResponse.postPlaces.length} amazing places
+            </div>
           </div>
         </div>
       </div>
@@ -117,7 +147,9 @@ const DetailContent = ({ slug }: DetailContentProps) => {
             src: postResponse.user.avatar,
           }}
           onClick={() => {
-            router.push(`/u/${postResponse.user.username}`);
+            withAuth(() => {
+              router.push(`/u/${postResponse.user.username}`);
+            });
           }}
           className="cursor-pointer"
         />

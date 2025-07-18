@@ -4,6 +4,7 @@ import { Bookmark, Heart, Share, Share2Icon } from "lucide-react";
 import React, { useState } from "react";
 import { useBookmarkPost, useLikePost } from "@/hooks/useApi";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { formatNumber } from "@/utils";
 
 interface DockingFloatProps {
   post: Post;
@@ -82,7 +83,7 @@ const DockingFloat = ({ post }: DockingFloatProps) => {
                   post.isLiked ? "text-[#EA7B26]" : "text-gray-600"
                 } ${isLikeAnimating ? "animate-pulse" : ""}`}
               >
-                {post.likeCount}
+                {formatNumber(post.likeCount)}
               </span>
             </Button>
 
@@ -109,7 +110,7 @@ const DockingFloat = ({ post }: DockingFloatProps) => {
                   post.isBookmarked ? "text-blue-600" : "text-gray-600"
                 } ${isBookmarkAnimating ? "animate-pulse" : ""}`}
               >
-                {post.bookmarksCount}
+                {formatNumber(post.bookmarksCount)}
               </span>
             </Button>
 

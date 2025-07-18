@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { capitalizeWords } from "@/utils";
+import { capitalizeWords, formatNumber } from "@/utils";
 
 interface TopPost {
   id: string;
@@ -159,7 +159,7 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <Tooltip content={post.title} placement="top">
-                      <h3 className="font-semibold text-gray-900 line-clamp-1 text-sm sm:text-lg">
+                      <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm sm:text-lg">
                         {post.title}
                       </h3>
                     </Tooltip>
@@ -168,7 +168,7 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                         size="sm"
                         color={getRankColor(post.rank)}
                         variant="flat"
-                        className="flex-shrink-0"
+                        className="flex-shrink-0 hidden sm:flex "
                       >
                         #{post.rank}
                       </Chip>
@@ -202,16 +202,20 @@ export default function TopPostsSection({ limit = 5 }: TopPostsSectionProps) {
                   <div className="flex gap-3 text-sm">
                     <div className="flex items-center gap-1 text-red-500">
                       <Heart className="w-4 h-4" />
-                      <span className="font-medium">{post.totalLikes}</span>
+                      <span className="font-medium">
+                        {formatNumber(post.totalLikes)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1 text-blue-500">
                       <Bookmark className="w-4 h-4" />
-                      <span className="font-medium">{post.totalBookmarks}</span>
+                      <span className="font-medium">
+                        {formatNumber(post.totalBookmarks)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1 text-green-500">
                       <TrendingUp className="w-4 h-4" />
                       <span className="font-medium">
-                        {post.totalEngagement}
+                        {formatNumber(post.totalEngagement)}
                       </span>
                     </div>
                   </div>

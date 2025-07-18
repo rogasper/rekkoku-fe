@@ -14,7 +14,7 @@ import {
 } from "@heroui/react";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { useState, Suspense, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { Search, X } from "lucide-react";
 import { usePosts, useCities } from "@/hooks/useApi";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -26,6 +26,7 @@ interface ExploreContentProps {
   className?: string;
   searchQuery?: string;
   cityId?: string;
+  initialCity?: City | null;
 }
 
 const SectionSkeleton = () => (
@@ -63,6 +64,7 @@ export default function ExploreContent({
   className = "",
   searchQuery = "",
   cityId = "",
+  initialCity,
 }: ExploreContentProps) {
   const router = useRouter();
 
@@ -102,19 +104,34 @@ export default function ExploreContent({
     { enabled: hasActiveSearch }
   );
 
-  // Initialize local state from props
+  // Initialize local state from props only on mount or when props change
   useEffect(() => {
     setLocalSearchQuery(searchQuery);
     setLocalCityId(cityId);
+  }, [searchQuery, cityId]);
 
-    // Set city search text if cityId exists
-    if (cityId && citiesData) {
-      const selectedCity = citiesData.find((city) => city.id === cityId);
-      if (selectedCity) {
-        setCitySearch(selectedCity.name);
+  // Initialize citySearch only when we have cityId but citySearch is empty
+  // This runs separately to avoid interfering with user typing
+  useEffect(() => {
+    // Only set initial value, don't override user input
+    if (cityId && !citySearch) {
+      if (initialCity) {
+        setCitySearch(initialCity.name);
+      } else if (citiesData) {
+        const selectedCity = citiesData.find((city) => city.id === cityId);
+        if (selectedCity) {
+          setCitySearch(selectedCity.name);
+        }
       }
     }
-  }, [searchQuery, cityId, citiesData]);
+  }, [cityId, initialCity, citiesData]);
+
+  // Clear citySearch when cityId is cleared
+  useEffect(() => {
+    if (!cityId) {
+      setCitySearch("");
+    }
+  }, [cityId]);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -206,16 +223,32 @@ export default function ExploreContent({
                         variant="bordered"
                         selectedKey={localCityId || null}
                         onSelectionChange={(key: string | number | null) => {
-                          setLocalCityId((key as string) || "");
-                          const selectedCity = citiesData?.find(
-                            (city) => city.id === key
-                          );
-                          if (selectedCity) {
-                            setCitySearch(selectedCity.name);
+                          const cityId = (key as string) || "";
+                          setLocalCityId(cityId);
+
+                          if (cityId) {
+                            const selectedCity = citiesData?.find(
+                              (city) => city.id === cityId
+                            );
+                            if (selectedCity) {
+                              setCitySearch(selectedCity.name);
+                            }
+                          } else {
+                            // If cleared, reset city search
+                            setCitySearch("");
                           }
                         }}
                         onInputChange={(value: string) => {
                           setCitySearch(value);
+                          // Only clear localCityId if input is completely empty (not just typing)
+                          if (value === "") {
+                            setLocalCityId("");
+                          }
+                        }}
+                        listboxProps={{
+                          emptyContent: isLoadingCities
+                            ? "Loading..."
+                            : "No cities found",
                         }}
                         items={citiesData || []}
                         isLoading={isLoadingCities}
@@ -244,7 +277,7 @@ export default function ExploreContent({
                       </Button>
                     )}
                     <Button
-                      color="primary"
+                      className="bg-[#EA7B26] text-white"
                       onPress={handleSearch}
                       startContent={<Search className="w-4 h-4" />}
                     >
@@ -322,7 +355,7 @@ export default function ExploreContent({
               <div className="grid gap-4 sm:gap-6 lg:gap-8 grid-cols-1">
                 <div className="xl:order-1">
                   <Suspense fallback={<SectionSkeleton />}>
-                    <TopCitiesSection limit={10} />
+                    <TopCitiesSection limit={5} />
                   </Suspense>
                 </div>
                 <div className="space-y-4 sm:space-y-6 lg:space-y-8 xl:order-2">
@@ -330,7 +363,7 @@ export default function ExploreContent({
                     <TopPostsSection limit={5} />
                   </Suspense>
                   <Suspense fallback={<SectionSkeleton />}>
-                    <TopUsersSection limit={3} />
+                    <TopUsersSection limit={5} />
                   </Suspense>
                 </div>
               </div>

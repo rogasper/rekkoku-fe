@@ -1,7 +1,8 @@
 "use client";
 import { Tabs, Tab } from "@heroui/react";
 import { MapPinHouseIcon, MapPinIcon, TrendingUpIcon } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 
 type TabsNavbarProps = React.HTMLAttributes<HTMLDivElement>;
 
@@ -16,7 +17,7 @@ const TabsNavbar: React.FC<TabsNavbarProps> = ({
   };
   return (
     <>
-      {pathname !== "/search" && (
+      {pathname !== "/search" && pathname !== "/about" && (
         <div
           className={`${className}  backdrop-blur-sm shadow-lg border-b rounded-xl border-gray-200/50 sticky top-0 z-30`}
           {...props}

@@ -18,14 +18,9 @@ import { useState } from "react";
 import { useCities, useCreatePost } from "@/hooks/useApi";
 import { City } from "@/types/api";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { UI_CONSTANTS, DEFAULTS } from "@/utils/constants";
-
-const isValidGmapsLink = (url: string): boolean => {
-  const gmapsPattern =
-    /(https?:\/\/(www\.)?(google\.com\/maps|goo\.gl\/maps|maps\.app\.goo\.gl)\/[^\s]+)/;
-  return gmapsPattern.test(url);
-};
+import { isValidGmapsLink } from "@/utils/strings";
 
 const MAX_GMAPS_LINKS = UI_CONSTANTS.MAX_GMAPS_LINKS;
 
@@ -60,6 +55,7 @@ export default function CreatePostModal({
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const router = useRouter();
+  const [isLoadingSave, setIsLoadingSave] = useState(false);
 
   const {
     register,
@@ -87,6 +83,7 @@ export default function CreatePostModal({
   const selectedCityId = watch("cityId");
 
   const onSubmit = async (data: any) => {
+    setIsLoadingSave(true);
     try {
       const filteredUrls = gmapsUrls.filter((url: string) => url.trim() !== "");
       const submitData = {
@@ -103,6 +100,7 @@ export default function CreatePostModal({
           reset();
           setGmapsUrls([""]);
           onOpenChange(false);
+          setIsLoadingSave(false);
           const postSlug = response?.data?.slug;
           if (onSuccess && postSlug) {
             onSuccess(postSlug);
@@ -116,10 +114,12 @@ export default function CreatePostModal({
             description: error.message,
             color: "danger",
           });
+          setIsLoadingSave(false);
         },
       });
     } catch (error) {
       console.error("Error creating post:", error);
+      setIsLoadingSave(false);
     }
   };
 
@@ -143,12 +143,19 @@ export default function CreatePostModal({
   return (
     <Modal
       isOpen={isOpen}
-      onOpenChange={onOpenChange}
+      onOpenChange={(open) => {
+        if (!open) {
+          reset();
+          onOpenChange(open);
+        }
+      }}
       isDismissable={false}
       backdrop="blur"
-      size="2xl"
+      size={"2xl"}
       scrollBehavior="outside"
-      placement="center"
+      placement="bottom"
+      classNames={{ wrapper: "items-start h-auto", base: "my-auto" }}
+      shouldBlockScroll={false}
     >
       <ModalContent>
         {(onClose) => (
@@ -191,6 +198,11 @@ export default function CreatePostModal({
                   onInputChange={(value: string) => {
                     setSearch(value);
                   }}
+                  listboxProps={{
+                    emptyContent: isLoadingCities
+                      ? "Loading..."
+                      : "No cities found",
+                  }}
                   errorMessage={errors.cityId?.message}
                   isInvalid={!!errors.cityId}
                   items={citiesData || []}
@@ -219,6 +231,8 @@ export default function CreatePostModal({
                         value={url}
                         onChange={(e) => updateGmapsUrl(index, e.target.value)}
                         className="flex-1"
+                        isInvalid={!!errors.gmapsLinks?.[index]}
+                        errorMessage={errors.gmapsLinks?.[index]?.message}
                       />
                       {gmapsUrls.length > 1 && (
                         <Button
@@ -247,13 +261,20 @@ export default function CreatePostModal({
               </div>
             </ModalBody>
             <ModalFooter>
-              <Button color="danger" variant="light" onPress={onClose}>
+              <Button
+                color="danger"
+                variant="light"
+                onPress={() => {
+                  reset();
+                  onClose();
+                }}
+              >
                 Cancel
               </Button>
               <Button
                 color="primary"
                 type="submit"
-                isLoading={isSubmitting}
+                isLoading={isSubmitting || isLoadingSave}
                 className="bg-[#EA7B26] text-white"
               >
                 Create Post

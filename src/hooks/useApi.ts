@@ -207,6 +207,7 @@ export function usePostBySlug(slug: string) {
   return useQuery({
     queryKey: queryKeys.posts.bySlug(slug),
     queryFn: () => apiClient.get(API_ENDPOINTS.POSTS.GET_BY_SLUG(slug)),
+    refetchOnMount: true,
   });
 }
 
@@ -266,26 +267,24 @@ export function useUpdatePost(
   id: string,
   options?: { autoInvalidate?: boolean }
 ) {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (data: any) =>
       apiClient.put(API_ENDPOINTS.POSTS.UPDATE(id), data),
-    onSuccess: () => {
-      // Only invalidate if autoInvalidate is true (default behavior for backward compatibility)
-      if (options?.autoInvalidate !== false) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.posts.lists() });
-        // Invalidate ALL bySlug queries (since we don't know the specific slug)
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.posts.all,
-          predicate: (query) => {
-            // This will invalidate any query that starts with ["posts", "slug", ...]
-            return query.queryKey.includes("slug");
-          },
-        });
-      }
-    },
+    // onSuccess: () => {
+    //   // Only invalidate if autoInvalidate is true (default behavior for backward compatibility)
+    //   if (options?.autoInvalidate !== false) {
+    //     queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) });
+    //     queryClient.invalidateQueries({ queryKey: queryKeys.posts.lists() });
+    //     // Invalidate ALL bySlug queries (since we don't know the specific slug)
+    //     queryClient.invalidateQueries({
+    //       queryKey: queryKeys.posts.all,
+    //       predicate: (query) => {
+    //         // This will invalidate any query that starts with ["posts", "slug", ...]
+    //         return query.queryKey.includes("slug");
+    //       },
+    //     });
+    //   }
+    // },
   });
 }
 
@@ -295,9 +294,6 @@ export function useUpdatePostStatus(id: string) {
   return useMutation({
     mutationFn: (data: any) =>
       apiClient.put(API_ENDPOINTS.POSTS.UPDATE_STATUS(id), data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.progress(id) });
-    },
   });
 }
 

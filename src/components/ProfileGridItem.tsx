@@ -3,7 +3,8 @@ import { Card } from "@heroui/react";
 import { BookmarkIcon, HeartIcon, MapPinIcon } from "lucide-react";
 import Image from "next/image";
 import React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
+import { formatNumber } from "@/utils";
 
 type ContentType = "post" | "like" | "bookmark" | "draft";
 
@@ -118,13 +119,13 @@ const ProfileGridItem: React.FC<ProfileGridItemProps> = ({
                     fill="white"
                   />
                   <span className="text-white text-[10px] sm:text-xs">
-                    {likes}
+                    {formatNumber(likes)}
                   </span>
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1">
                   <BookmarkIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
                   <span className="text-white text-[10px] sm:text-xs">
-                    {bookmarks}
+                    {formatNumber(bookmarks)}
                   </span>
                 </div>
               </div>

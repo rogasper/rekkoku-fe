@@ -4,25 +4,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button, Card, CardBody, Input, Image, addToast } from "@heroui/react";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { ArrowLeft, Save, X, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useQueryClient } from "@tanstack/react-query";
 import { useCities, useUpdatePost } from "@/hooks/useApi";
 import type { Post, City } from "@/types/api";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getDefaultPostImage } from "@/utils/ui";
 import { UI_CONSTANTS, DEFAULTS } from "@/utils/constants";
-// import apiClient from "@/utils/api";
-import { updatePostAction } from "@/actions/action";
-
-// Helper function to validate Google Maps links
-const isValidGmapsLink = (url: string): boolean => {
-  const gmapsPattern =
-    /(https?:\/\/(www\.)?(google\.com\/maps|goo\.gl\/maps|maps\.app\.goo\.gl)\/[^\s]+)/;
-  return gmapsPattern.test(url);
-};
+import { isValidGmapsLink } from "@/utils";
 
 const MAX_GMAPS_LINKS = UI_CONSTANTS.MAX_GMAPS_LINKS;
 
@@ -52,12 +43,12 @@ interface EditPostContentProps {
 
 const EditPostContent = ({ slug, post }: EditPostContentProps) => {
   const router = useRouter();
-  const isSubmittingRef = useRef(false);
   // const [isLoading, setIsLoading] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(post.city?.name || "");
   const debouncedSearch = useDebounce(search, 500);
   const [gmapsUrls, setGmapsUrls] = useState<string[]>([]);
-  const [existingPlaces, setExistingPlaces] = useState<any[]>([]);
+  const [existingPlaces, setExistingPlaces] = useState<any[]>(post.postPlaces);
+  const [isLoadingSave, setIsLoadingSave] = useState(false);
 
   // Cities data for autocomplete
   const { data: cities, isLoading: isLoadingCities } = useCities({
@@ -69,49 +60,25 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
   const citiesData = cities?.data as City[];
 
   // Update post mutation (disable auto-invalidation to prevent DOM errors)
-  const updatePostMutation = useUpdatePost(post?.id || "", {
-    autoInvalidate: false,
-  });
+  const { mutate: updatePost } = useUpdatePost(post?.id || "");
 
   // Form for editing
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-    reset,
+    formState: { errors },
     setValue,
     watch,
   } = useForm({
     resolver: zodResolver(editPostSchema),
     defaultValues: {
-      title: "",
-      cityId: "",
-      gmapsLinks: [],
+      title: post.title,
+      cityId: post.cityId,
+      gmapsLinks: post.postPlaces?.map((p) => p.place.gmapsLink) || [],
     },
   });
 
   const selectedCityId = watch("cityId");
-
-  // Initialize form when post data is available
-  useEffect(() => {
-    if (post) {
-      reset({
-        title: post.title,
-        cityId: post.cityId,
-        gmapsLinks: [],
-      });
-      setSearch(post.city?.name || "");
-
-      // Initialize existing places for management
-      const places = post.postPlaces?.sort((a, b) => a.order - b.order) || [];
-      setExistingPlaces(places);
-
-      // Get current gmaps links from existing places
-      const existingLinks = places.map((p) => p.place.gmapsLink);
-      setGmapsUrls(existingLinks);
-      setValue("gmapsLinks", existingLinks);
-    }
-  }, [post, reset, setValue]);
 
   const handleBack = () => {
     router.push(`/review/${slug}`);
@@ -119,11 +86,9 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
 
   const handleSave = async (data: any) => {
     // Prevent multiple submissions using ref (no state updates)
-    if (isSubmitting || updatePostMutation.isPending || isSubmittingRef.current)
-      return;
+    // if (isSubmitting || isLoadingSave) return;
 
-    isSubmittingRef.current = true;
-
+    setIsLoadingSave(true);
     try {
       // Use direct API call to avoid any React Query state changes
       const allLinks = gmapsUrls.filter((url) => url.trim() !== "");
@@ -136,18 +101,16 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
 
       // Direct API call without mutation to avoid state updates
       // await apiClient.put(`/posts/${postResponse?.id}`, submitData);
-      updatePostMutation.mutate(submitData, {
+      updatePost(submitData, {
         onSuccess: async () => {
           addToast({
             title: "Post updated",
             description: "Redirecting to review page...",
             color: "success",
           });
-          // localStorage.removeItem("editPostData");
-          updatePostAction(slug);
-          // setTimeout(() => {
-          //   updatePostAction(slug);
-          // }, 2000);
+          setIsLoadingSave(false);
+          // updatePostAction(slug);
+          router.push(`/review/${slug}`);
         },
         onError: (error) => {
           addToast({
@@ -155,17 +118,18 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
             description: error.message,
             color: "danger",
           });
+          setIsLoadingSave(false);
         },
       });
     } catch (error) {
       console.error("Error updating post:", error);
-      isSubmittingRef.current = false; // Reset on error
       // Handle error here - could show toast notification
+      setIsLoadingSave(false);
     }
   };
 
   const addGmapsUrl = () => {
-    if (isSubmitting || updatePostMutation.isPending) return;
+    if (isLoadingSave) return;
 
     if (gmapsUrls.length < MAX_GMAPS_LINKS) {
       setGmapsUrls([...gmapsUrls, ""]);
@@ -173,7 +137,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
   };
 
   const removeGmapsUrl = (index: number) => {
-    if (isSubmitting || updatePostMutation.isPending) return;
+    if (isLoadingSave) return;
 
     const newUrls = gmapsUrls.filter((_, i) => i !== index);
     setGmapsUrls(newUrls);
@@ -184,7 +148,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
   };
 
   const updateGmapsUrl = (index: number, value: string) => {
-    if (isSubmitting || updatePostMutation.isPending) return;
+    if (isLoadingSave) return;
 
     const newUrls = [...gmapsUrls];
     newUrls[index] = value;
@@ -196,7 +160,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
   };
 
   const moveExistingPlace = (index: number, direction: "up" | "down") => {
-    if (isSubmitting || updatePostMutation.isPending) return;
+    if (isLoadingSave) return;
 
     const newPlaces = [...existingPlaces];
     const targetIndex = direction === "up" ? index - 1 : index + 1;
@@ -215,7 +179,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
   };
 
   const removeExistingPlace = (index: number) => {
-    if (isSubmitting || updatePostMutation.isPending) return;
+    if (isLoadingSave) return;
 
     const newPlaces = existingPlaces.filter((_, i) => i !== index);
     setExistingPlaces(newPlaces);
@@ -225,20 +189,33 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
     setGmapsUrls([...newUrls, ...gmapsUrls.slice(existingPlaces.length)]);
   };
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex items-center justify-center py-12">
-  //       <Loader2 className="w-8 h-8 animate-spin" />
-  //     </div>
-  //   );
-  // }
+  // Initialize form when post data is available
+  // useEffect(() => {
+  //   if (post) {
+  //     reset({
+  //       title: post.title,
+  //       cityId: post.cityId,
+  //       gmapsLinks: [],
+  //     });
+  //     setSearch(post.city?.name || "");
+
+  //     // Initialize existing places for management
+  //     const places = post.postPlaces?.sort((a, b) => a.order - b.order) || [];
+  //     setExistingPlaces(places);
+
+  //     // Get current gmaps links from existing places
+  //     const existingLinks = places.map((p) => p.place.gmapsLink);
+  //     setGmapsUrls(existingLinks);
+  //     setValue("gmapsLinks", existingLinks);
+  //   }
+  // }, [post, reset, setValue]);
 
   if (!post) {
     return <div className="text-center py-8">Post not found</div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 notranslate">
       {/* Header */}
       <div className="relative h-48 bg-gradient-to-r from-orange-200 to-amber-200 rounded-lg overflow-hidden">
         <Image
@@ -253,7 +230,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
           size="sm"
           className="hover:bg-orange-50 absolute top-4 left-4 z-20 text-white text-lg"
           onPress={handleBack}
-          isDisabled={isSubmitting || updatePostMutation.isPending}
+          isDisabled={isLoadingSave}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Review
@@ -274,17 +251,16 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
           <form
             onSubmit={(e) => {
               // Prevent any form submission during loading
-              if (isSubmitting || updatePostMutation.isPending) {
+              if (isLoadingSave) {
                 e.preventDefault();
                 return;
               }
               handleSubmit(handleSave)(e);
             }}
-            className={`space-y-6 ${
-              isSubmitting || updatePostMutation.isPending
-                ? "pointer-events-none opacity-75"
-                : ""
+            className={`space-y-6 notranslate ${
+              isLoadingSave ? "pointer-events-none opacity-75" : ""
             }`}
+            translate="no"
           >
             {/* Title and City */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -293,12 +269,16 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                   Post Title
                 </label>
                 <Input
+                  aria-label="Post Title"
                   placeholder="Enter post title"
                   variant="bordered"
                   {...register("title")}
                   errorMessage={errors.title?.message}
+                  classNames={{
+                    input: "focus:outline-none",
+                  }}
                   isInvalid={!!errors.title}
-                  isDisabled={isSubmitting || updatePostMutation.isPending}
+                  isDisabled={isLoadingSave}
                 />
               </div>
 
@@ -307,11 +287,13 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                   City
                 </label>
                 <Autocomplete
+                  aria-label="City"
                   placeholder="Search and select a city"
                   variant="bordered"
+                  key={`autocomplete-${selectedCityId}`}
                   selectedKey={selectedCityId || null}
                   onSelectionChange={(key: string | number | null) => {
-                    if (!isSubmitting && !updatePostMutation.isPending) {
+                    if (!isLoadingSave) {
                       setValue("cityId", key as string);
                       const selectedCity = citiesData?.find(
                         (city) => city.id === key
@@ -322,9 +304,14 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                     }
                   }}
                   onInputChange={(value: string) => {
-                    if (!isSubmitting && !updatePostMutation.isPending) {
+                    if (!isLoadingSave) {
                       setSearch(value);
                     }
+                  }}
+                  listboxProps={{
+                    emptyContent: isLoadingCities
+                      ? "Loading..."
+                      : "No cities found",
                   }}
                   errorMessage={errors.cityId?.message}
                   isInvalid={!!errors.cityId}
@@ -333,7 +320,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                   inputValue={search}
                   allowsCustomValue={false}
                   menuTrigger="input"
-                  isDisabled={isSubmitting || updatePostMutation.isPending}
+                  isDisabled={isLoadingSave}
                 >
                   {(city: City) => (
                     <AutocompleteItem key={city.id}>
@@ -345,17 +332,18 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
             </div>
 
             {/* Existing Places Management */}
-            {existingPlaces.length > 0 && (
+            {existingPlaces?.length > 0 && (
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Existing Places</h3>
-                {existingPlaces.map((place, index) => (
-                  <Card key={`place-${place.id}-${index}`} className="p-4">
+                {existingPlaces?.map((place, index) => (
+                  <Card key={`place-${place.id}`} className="p-4">
                     {/* Desktop Layout */}
                     <div className="hidden md:flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Image
                           src={place.place.image || getDefaultPostImage()}
                           alt={place.place.title}
+                          key={`image-${place.place.image}`}
                           width={80}
                           height={80}
                           className="rounded-lg object-cover"
@@ -377,11 +365,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                           size="sm"
                           variant="light"
                           onPress={() => moveExistingPlace(index, "up")}
-                          isDisabled={
-                            index === 0 ||
-                            isSubmitting ||
-                            updatePostMutation.isPending
-                          }
+                          isDisabled={index === 0 || isLoadingSave}
                         >
                           ↑
                         </Button>
@@ -390,9 +374,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                           variant="light"
                           onPress={() => moveExistingPlace(index, "down")}
                           isDisabled={
-                            index === existingPlaces.length - 1 ||
-                            isSubmitting ||
-                            updatePostMutation.isPending
+                            index === existingPlaces.length - 1 || isLoadingSave
                           }
                         >
                           ↓
@@ -403,9 +385,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                             color="danger"
                             variant="light"
                             onPress={() => removeExistingPlace(index)}
-                            isDisabled={
-                              isSubmitting || updatePostMutation.isPending
-                            }
+                            isDisabled={isLoadingSave}
                           >
                             <X className="w-4 h-4" />
                           </Button>
@@ -441,11 +421,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                           variant="flat"
                           color="default"
                           onPress={() => moveExistingPlace(index, "up")}
-                          isDisabled={
-                            index === 0 ||
-                            isSubmitting ||
-                            updatePostMutation.isPending
-                          }
+                          isDisabled={index === 0 || isLoadingSave}
                           className="flex-1 min-h-[44px]"
                         >
                           <span className="text-lg">↑</span>
@@ -457,9 +433,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                           color="default"
                           onPress={() => moveExistingPlace(index, "down")}
                           isDisabled={
-                            index === existingPlaces.length - 1 ||
-                            isSubmitting ||
-                            updatePostMutation.isPending
+                            index === existingPlaces.length - 1 || isLoadingSave
                           }
                           className="flex-1 min-h-[44px]"
                         >
@@ -472,9 +446,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                             color="danger"
                             variant="flat"
                             onPress={() => removeExistingPlace(index)}
-                            isDisabled={
-                              isSubmitting || updatePostMutation.isPending
-                            }
+                            isDisabled={isLoadingSave}
                             className="min-h-[44px] px-4"
                           >
                             <X className="w-5 h-5" />
@@ -497,9 +469,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                   variant="light"
                   onPress={addGmapsUrl}
                   isDisabled={
-                    gmapsUrls.length >= MAX_GMAPS_LINKS ||
-                    isSubmitting ||
-                    updatePostMutation.isPending
+                    gmapsUrls.length >= MAX_GMAPS_LINKS || isLoadingSave
                   }
                   size="sm"
                 >
@@ -512,6 +482,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                 return (
                   <div key={`new-${actualIndex}`} className="flex gap-2">
                     <Input
+                      aria-label="Google Maps URL"
                       placeholder="https://maps.google.com/..."
                       variant="bordered"
                       value={url}
@@ -519,14 +490,17 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                         updateGmapsUrl(actualIndex, e.target.value)
                       }
                       className="flex-1"
-                      isDisabled={isSubmitting || updatePostMutation.isPending}
+                      classNames={{
+                        input: "focus:outline-none",
+                      }}
+                      isDisabled={isLoadingSave}
                     />
                     <Button
                       isIconOnly
                       color="danger"
                       variant="light"
                       onPress={() => removeGmapsUrl(actualIndex)}
-                      isDisabled={isSubmitting || updatePostMutation.isPending}
+                      isDisabled={isLoadingSave}
                     >
                       <X className="w-4 h-4" />
                     </Button>
@@ -541,14 +515,14 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                 color="danger"
                 variant="light"
                 onPress={handleBack}
-                isDisabled={isSubmitting || updatePostMutation.isPending}
+                isDisabled={isLoadingSave}
               >
                 Cancel
               </Button>
               <Button
                 color="success"
                 type="submit"
-                isLoading={isSubmitting || updatePostMutation.isPending}
+                isLoading={isLoadingSave}
                 startContent={<Save className="w-4 h-4" />}
               >
                 Save Changes
