@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { verifySession } from "@/lib/auth";
 import Script from "next/script";
 import NextTopLoader from "nextjs-toploader";
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,6 +26,9 @@ export const metadata: Metadata = {
   title: "Rekkoku | Rekomendasi dari Aku",
   description:
     "Rekkoku is a platform to share your taste in food, places, and experiences.",
+  verification: {
+    google: "-9hlbhD_BUIUbjcIj9CKnze9OybrHl47tvb6nRXANHc",
+  },
   openGraph: {
     title: "Rekkoku | Rekomendasi dari Aku",
     description:
@@ -65,6 +69,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="light">
+      <GoogleTagManager gtmId="G-B6K7M8PEWL" />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -76,11 +81,12 @@ export default async function RootLayout({
           {children}
         </Providers>
 
-        {/* <Script
+        <Script
           defer
           src="https://umami-analytic.rogasper.com/script.js"
           data-website-id="1b463dcf-3329-4d19-9586-704a1b84d0e2"
-        ></Script> */}
+        ></Script>
+        <GoogleAnalytics gaId="G-B6K7M8PEWL" />
       </body>
     </html>
   );
