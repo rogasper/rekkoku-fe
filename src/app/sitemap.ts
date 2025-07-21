@@ -2,10 +2,7 @@ import type { MetadataRoute } from "next";
 import { getAllPublishedPostsForSitemap } from "@/lib/server-api";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "https://rekkoku.com";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://rekkoku.my.id";
 
   // Static routes with different priorities and change frequencies
   const staticRoutes: MetadataRoute.Sitemap = [
