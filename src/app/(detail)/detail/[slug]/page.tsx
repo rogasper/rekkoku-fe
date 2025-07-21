@@ -54,10 +54,7 @@ export async function generateMetadata({
   const modifiedTime = new Date(post.updatedAt).toISOString();
 
   // Use environment variable for base URL with fallback
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "https://rekkoku.com";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://rekkoku.my.id";
   const url = `${baseUrl}/detail/${slug}`;
 
   return {
