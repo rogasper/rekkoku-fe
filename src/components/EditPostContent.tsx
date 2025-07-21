@@ -46,8 +46,8 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
   // const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState(post.city?.name || "");
   const debouncedSearch = useDebounce(search, 500);
-  const [gmapsUrls, setGmapsUrls] = useState<string[]>([]);
   const [existingPlaces, setExistingPlaces] = useState<any[]>(post.postPlaces);
+  const [newGmapsUrls, setNewGmapsUrls] = useState<string[]>([]);
   const [isLoadingSave, setIsLoadingSave] = useState(false);
 
   // Cities data for autocomplete
@@ -91,7 +91,9 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
     setIsLoadingSave(true);
     try {
       // Use direct API call to avoid any React Query state changes
-      const allLinks = gmapsUrls.filter((url) => url.trim() !== "");
+      const existingLinks = existingPlaces.map((p) => p.place.gmapsLink);
+      const newLinks = newGmapsUrls.filter((url) => url.trim() !== "");
+      const allLinks = [...existingLinks, ...newLinks];
 
       const submitData = {
         title: data.title,
@@ -131,32 +133,33 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
   const addGmapsUrl = () => {
     if (isLoadingSave) return;
 
-    if (gmapsUrls.length < MAX_GMAPS_LINKS) {
-      setGmapsUrls([...gmapsUrls, ""]);
+    const totalPlaces = existingPlaces.length + newGmapsUrls.length;
+    if (totalPlaces < MAX_GMAPS_LINKS) {
+      setNewGmapsUrls([...newGmapsUrls, ""]);
     }
   };
 
   const removeGmapsUrl = (index: number) => {
     if (isLoadingSave) return;
 
-    const newUrls = gmapsUrls.filter((_, i) => i !== index);
-    setGmapsUrls(newUrls);
-    setValue(
-      "gmapsLinks",
-      newUrls.filter((url) => url.trim() !== "")
-    );
+    const newUrls = newGmapsUrls.filter((_, i) => i !== index);
+    setNewGmapsUrls(newUrls);
+    setValue("gmapsLinks", [
+      ...existingPlaces.map((p) => p.place.gmapsLink),
+      ...newUrls.filter((url) => url.trim() !== ""),
+    ]);
   };
 
   const updateGmapsUrl = (index: number, value: string) => {
     if (isLoadingSave) return;
 
-    const newUrls = [...gmapsUrls];
+    const newUrls = [...newGmapsUrls];
     newUrls[index] = value;
-    setGmapsUrls(newUrls);
-    setValue(
-      "gmapsLinks",
-      newUrls.filter((url) => url.trim() !== "")
-    );
+    setNewGmapsUrls(newUrls);
+    setValue("gmapsLinks", [
+      ...existingPlaces.map((p) => p.place.gmapsLink),
+      ...newUrls.filter((url) => url.trim() !== ""),
+    ]);
   };
 
   const moveExistingPlace = (index: number, direction: "up" | "down") => {
@@ -172,9 +175,12 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
       ];
       setExistingPlaces(newPlaces);
 
-      // Update gmapsUrls to reflect new order
+      // Update form value to reflect new order
       const newUrls = newPlaces.map((p) => p.place.gmapsLink);
-      setGmapsUrls([...newUrls, ...gmapsUrls.slice(newPlaces.length)]);
+      setValue("gmapsLinks", [
+        ...newUrls,
+        ...newGmapsUrls.filter((url) => url.trim() !== ""),
+      ]);
     }
   };
 
@@ -184,9 +190,12 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
     const newPlaces = existingPlaces.filter((_, i) => i !== index);
     setExistingPlaces(newPlaces);
 
-    // Update gmapsUrls
+    // Update form value
     const newUrls = newPlaces.map((p) => p.place.gmapsLink);
-    setGmapsUrls([...newUrls, ...gmapsUrls.slice(existingPlaces.length)]);
+    setValue("gmapsLinks", [
+      ...newUrls,
+      ...newGmapsUrls.filter((url) => url.trim() !== ""),
+    ]);
   };
 
   // Initialize form when post data is available
@@ -469,7 +478,8 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                   variant="light"
                   onPress={addGmapsUrl}
                   isDisabled={
-                    gmapsUrls.length >= MAX_GMAPS_LINKS || isLoadingSave
+                    existingPlaces.length + newGmapsUrls.length >=
+                      MAX_GMAPS_LINKS || isLoadingSave
                   }
                   size="sm"
                 >
@@ -477,18 +487,15 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                 </Button>
               </div>
 
-              {gmapsUrls.slice(existingPlaces.length).map((url, index) => {
-                const actualIndex = existingPlaces.length + index;
+              {newGmapsUrls.map((url, index) => {
                 return (
-                  <div key={`new-${actualIndex}`} className="flex gap-2">
+                  <div key={`new-${index}`} className="flex gap-2">
                     <Input
                       aria-label="Google Maps URL"
                       placeholder="https://maps.google.com/..."
                       variant="bordered"
                       value={url}
-                      onChange={(e) =>
-                        updateGmapsUrl(actualIndex, e.target.value)
-                      }
+                      onChange={(e) => updateGmapsUrl(index, e.target.value)}
                       className="flex-1"
                       classNames={{
                         input: "focus:outline-none",
@@ -499,7 +506,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                       isIconOnly
                       color="danger"
                       variant="light"
-                      onPress={() => removeGmapsUrl(actualIndex)}
+                      onPress={() => removeGmapsUrl(index)}
                       isDisabled={isLoadingSave}
                     >
                       <X className="w-4 h-4" />
