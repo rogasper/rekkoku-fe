@@ -14,7 +14,6 @@ export default function robots(): MetadataRoute.Robots {
           "/nearby/*",
           "/search/*",
           "/top-places/*",
-          "",
         ],
         disallow: [
           "/edit/*",
