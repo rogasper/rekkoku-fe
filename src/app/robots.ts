@@ -7,7 +7,14 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        allow: [
+          "/",
+          "/detail/*",
+          "/u/*",
+          "/nearby/*",
+          "/search/*",
+          "/top-places/*",
+        ],
         disallow: [
           "/edit/*",
           "/review/*",
@@ -19,22 +26,6 @@ export default function robots(): MetadataRoute.Robots {
           "/_next/*",
           "/favicon.ico",
         ],
-      },
-      {
-        userAgent: "GPTBot",
-        disallow: "/",
-      },
-      {
-        userAgent: "CCBot",
-        disallow: "/",
-      },
-      {
-        userAgent: "ChatGPT-User",
-        disallow: "/",
-      },
-      {
-        userAgent: "Claude-Web",
-        disallow: "/",
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
