@@ -23,12 +23,12 @@ export const POST_STATUS = {
 export const UI_CONSTANTS = {
   PROGRESS_POLL_INTERVAL: 2000, // milliseconds
   MAX_GMAPS_LINKS: 7,
-  DEFAULT_PAGE_SIZE: 10,
+  DEFAULT_PAGE_SIZE: 100,
 } as const;
 
 // Default fallback values
 export const DEFAULTS = {
   POST_IMAGE:
     "https://asset.kompas.com/crops/BJdOTeUCdwHWS6ImI9qDnf3s8nI=/0x0:1000x667/1200x800/data/photo/2023/12/19/6580e31d4d33e.jpeg",
-  CITY_SEARCH: "Jakarta",
+  CITY_SEARCH: "",
 } as const;

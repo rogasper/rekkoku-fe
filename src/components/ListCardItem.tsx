@@ -1,8 +1,10 @@
 import { Button, Card, CardBody } from "@heroui/react";
-import { ExternalLink, MapPin } from "lucide-react";
+import { ExternalLink, MapPin, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import { Place } from "@/types/api";
+import ReviewBottomSheet from "@/components/ReviewBottomSheet";
+import { useState } from "react";
 
 interface ListCardItemProps {
   place: Place;
@@ -10,6 +12,7 @@ interface ListCardItemProps {
 }
 
 const ListCardItem = ({ place, postId }: ListCardItemProps) => {
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
   return (
     <Card
       key={postId}
@@ -51,8 +54,8 @@ const ListCardItem = ({ place, postId }: ListCardItemProps) => {
                 </p>
               </div>
 
-              {/* Google Maps Link */}
-              <div className="mt-auto pt-3">
+              {/* Actions */}
+              <div className="mt-auto pt-3 flex gap-2">
                 <Button
                   variant="bordered"
                   size="lg"
@@ -62,11 +65,26 @@ const ListCardItem = ({ place, postId }: ListCardItemProps) => {
                 >
                   Open in Google Maps
                 </Button>
+                <Button
+                  variant="bordered"
+                  size="lg"
+                  className="w-full sm:w-auto text-sm"
+                  startContent={<MessageCircle className="w-4 h-4" />}
+                  onPress={() => setIsReviewOpen(true)}
+                >
+                  Reviews ({place.reviewCount ?? 0})
+                </Button>
               </div>
             </div>
           </div>
         </div>
       </CardBody>
+      <ReviewBottomSheet
+        isOpen={isReviewOpen}
+        onOpenChange={setIsReviewOpen}
+        scope={{ placeId: place.id }}
+        header={{ title: place.title.split("·")[0], image: place.image }}
+      />
     </Card>
   );
 };

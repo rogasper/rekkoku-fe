@@ -45,15 +45,13 @@ apiClient.interceptors.response.use(
   (error) => {
     // Handle common errors
     if (error.response?.status === 401) {
-      // Unauthorized - clear auth store
-      console.error("Unauthorized access");
+      // Unauthorized - clear auth store silently (401 is expected when user not logged in)
       if (typeof window !== "undefined") {
-        // Clear Zustand store
         try {
           const { clearAuth } = useUser.getState();
           clearAuth();
         } catch (e) {
-          console.error("Failed to clear auth store:", e);
+          // silently ignore
         }
       }
     }

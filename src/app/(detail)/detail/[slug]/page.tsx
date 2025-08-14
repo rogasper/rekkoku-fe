@@ -9,9 +9,9 @@ import {
   getBestPostImage,
   generatePostJsonLd,
 } from "@/lib/server-api";
-import { formatRelativeTime } from "@/utils/dates";
 import { capitalizeWords } from "@/utils/strings";
 import { verifySession } from "@/lib/auth";
+import { getBaseUrl } from "@/utils/url";
 
 interface DetailPageProps {
   params: Promise<{ slug: string }>;
@@ -53,8 +53,7 @@ export async function generateMetadata({
   const publishedTime = new Date(post.createdAt).toISOString();
   const modifiedTime = new Date(post.updatedAt).toISOString();
 
-  // Use environment variable for base URL with fallback
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://rekkoku.my.id";
+  const baseUrl = getBaseUrl();
   const url = `${baseUrl}/detail/${slug}`;
 
   return {
@@ -122,6 +121,12 @@ export async function generateMetadata({
       ICBM: `${post.centerLat}, ${post.centerLong}`,
       "place:location:latitude": post.centerLat.toString(),
       "place:location:longitude": post.centerLong.toString(),
+      // SEO enhancements
+      "og:see_also": post.postPlaces.map((pp) => pp.place.gmapsLink).join(","),
+      "theme-color": "#f97316",
+      "format-detection": "telephone=no",
+      "apple-mobile-web-app-capable": "yes",
+      "apple-mobile-web-app-status-bar-style": "default",
     },
   };
 }
@@ -136,11 +141,8 @@ const DetailPage = async ({ params }: DetailPageProps) => {
   // Generate JSON-LD if post exists and is published
   let jsonLd = null;
   if (post && post.status === "PUBLISHED") {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "https://rekkoku.com";
-    jsonLd = generatePostJsonLd(post, baseUrl);
+    const jsonLdBaseUrl = getBaseUrl();
+    jsonLd = generatePostJsonLd(post, jsonLdBaseUrl);
   }
 
   console.log("server post", post);

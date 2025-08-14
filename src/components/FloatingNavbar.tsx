@@ -4,9 +4,7 @@ import {
   NavbarBrand,
   NavbarContent,
   NavbarItem,
-  Link,
   Button,
-  User,
   Avatar,
   Dropdown,
   DropdownTrigger,
@@ -14,9 +12,7 @@ import {
   DropdownItem,
 } from "@heroui/react";
 import Image from "next/image";
-import { useEffect } from "react";
 import useUser from "@/store/useUser";
-import { AuthSession } from "@/lib/auth";
 import { useRouter } from "nextjs-toploader/app";
 import { logout } from "@/actions/logout";
 import {
@@ -27,9 +23,8 @@ import {
   SettingsIcon,
   User2Icon,
 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
 import { useAuthModal } from "@/contexts/AuthModalContext";
+import { useNotificationCount } from "@/hooks/useApi";
 
 interface FloatingNavbarProps {
   isAuthenticated: boolean;
@@ -39,9 +34,10 @@ export default function FloatingNavbar({
   isAuthenticated,
 }: FloatingNavbarProps) {
   const user = useUser((state) => state.user);
-  const queryClient = useQueryClient();
   const { openLoginModal } = useAuthModal();
-
+  const { data: notificationCount, isLoading } = useNotificationCount(
+    user?.username !== undefined
+  );
   const router = useRouter();
 
   const handleMenuAction = (key: string) => {
@@ -107,12 +103,19 @@ export default function FloatingNavbar({
             {isAuthenticated && (
               <Button
                 onPress={() => router.push("/notifications")}
-                className="bg-transparent hover:bg-transparent hover:text-white text-white font-semibold"
+                className="bg-transparent hover:bg-transparent hover:text-white text-white font-semibold relative"
                 variant="flat"
                 radius="full"
                 isIconOnly
               >
                 <BellDotIcon className="w-5 h-5" color="#EA7B26" />
+                {notificationCount &&
+                  !isLoading &&
+                  notificationCount.data.unread > 0 && (
+                    <span className="absolute top-2 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {notificationCount.data.unread}
+                    </span>
+                  )}
               </Button>
             )}
           </div>

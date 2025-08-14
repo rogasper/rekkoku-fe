@@ -92,6 +92,26 @@ export const ANALYTICS_ENDPOINTS = {
   OVERVIEW: "/analytics/overview",
 } as const;
 
+export const CATEGORIES_ENDPOINTS = {
+  GET_ALL: "/categories",
+} as const;
+
+export const NOTIFICATIONS_ENDPOINTS = {
+  GET_ALL: "/notifications",
+  UPDATE: (id: string) => `/notifications/${id}`,
+  MARK_ALL_READ: "/notifications/mark-all-read",
+  GET_COUNT: "/notifications/count",
+} as const;
+
+// Reviews endpoints
+export const REVIEWS_ENDPOINTS = {
+  GET_ALL: "/reviews",
+  GET_STATS: "/reviews/stats",
+  CREATE: "/reviews",
+  UPDATE: (id: string) => `/reviews/${id}`,
+  DELETE: (id: string) => `/reviews/${id}`,
+} as const;
+
 // All endpoints combined
 export const API_ENDPOINTS = {
   USERS: USERS_ENDPOINTS,
@@ -102,4 +122,7 @@ export const API_ENDPOINTS = {
   USER_DETAILS: USER_DETAILS_ENDPOINTS,
   PLACES: PLACES_ENDPOINTS,
   ANALYTICS: ANALYTICS_ENDPOINTS,
+  CATEGORIES: CATEGORIES_ENDPOINTS,
+  NOTIFICATIONS: NOTIFICATIONS_ENDPOINTS,
+  REVIEWS: REVIEWS_ENDPOINTS,
 } as const;

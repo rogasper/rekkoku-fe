@@ -16,6 +16,8 @@ export interface Place {
   lat: number;
   createdAt: string;
   updatedAt: string;
+  reviewCount?: number;
+  averageRating?: number;
 }
 
 // Post Place relationship type
@@ -47,6 +49,12 @@ export interface City {
   updatedAt: string;
 }
 
+// Category type
+export interface Category {
+  id: string;
+  name: string;
+}
+
 // Post status enums
 export type PostStatus = "PUBLISHED" | "DRAFT" | "ARCHIVED";
 export type ProcessingStatus =
@@ -61,18 +69,24 @@ export interface Post {
   title: string;
   slug: string;
   status: PostStatus;
+  description: string;
+  budget: number;
+  averageRating: number;
   processingStatus: ProcessingStatus;
   userId: string;
   likeCount: number;
   bookmarksCount: number;
+  reviewCount?: number;
   centerLat: number;
   centerLong: number;
   cityId: string;
+  categoryId: string | undefined;
   createdAt: string;
   updatedAt: string;
   postPlaces: PostPlace[];
   user: User;
   city: City;
+  category: Category | null | undefined;
   _count?: {
     postPlaces: number;
   };
@@ -113,4 +127,10 @@ export interface PostListItem {
       image: string;
     };
   }[];
+}
+
+export interface CategoryListItem {
+  id: string;
+  name: string;
+  parentId: string;
 }

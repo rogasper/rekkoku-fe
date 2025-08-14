@@ -20,6 +20,7 @@ import { useState } from "react";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import CreatePostModal from "./CreatePostModal";
 import useUser from "@/store/useUser";
+import { useNotificationCount } from "@/hooks/useApi";
 
 interface BottomNavigationProps {
   isAuthenticated: boolean;
@@ -33,6 +34,8 @@ export default function BottomNavigation({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { openLoginModal } = useAuthModal();
   const user = useUser((state) => state.user);
+  const { data: notificationCount, isLoading: isNotificationCountLoading } =
+    useNotificationCount(user?.username !== undefined);
   const handleNavigation = (
     path: string,
     requiresAuth: boolean = false,
@@ -130,6 +133,13 @@ export default function BottomNavigation({
                   }
                 >
                   <Icon size={20} />
+                  {item.path === "/notifications" &&
+                    !isNotificationCountLoading &&
+                    notificationCount?.data?.unread > 0 && (
+                      <span className="absolute top-2 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {notificationCount?.data?.unread || 0}
+                      </span>
+                    )}
                 </Button>
               );
             })}

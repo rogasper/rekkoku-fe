@@ -1,10 +1,11 @@
 import { Post } from "@/types/api";
 import { Button, Card, CardBody } from "@heroui/react";
-import { Bookmark, Heart, Share, Share2Icon } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Share2Icon } from "lucide-react";
 import React, { useState } from "react";
 import { useBookmarkPost, useLikePost } from "@/hooks/useApi";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { formatNumber } from "@/utils";
+import ReviewBottomSheet from "./ReviewBottomSheet";
 
 interface DockingFloatProps {
   post: Post;
@@ -14,6 +15,7 @@ const DockingFloat = ({ post }: DockingFloatProps) => {
   const [isLikeAnimating, setIsLikeAnimating] = useState(false);
   const [isBookmarkAnimating, setIsBookmarkAnimating] = useState(false);
   const [showFloatingHeart, setShowFloatingHeart] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
 
   // Use the same mutation hooks as CardItem for consistency
   const { mutate: likePost } = useLikePost();
@@ -114,6 +116,19 @@ const DockingFloat = ({ post }: DockingFloatProps) => {
               </span>
             </Button>
 
+            {/* Comment/Review Button */}
+            <Button
+              variant="light"
+              size="sm"
+              className="flex items-center gap-2 hover:bg-amber-50 transition-colors duration-200"
+              onPress={() => setIsReviewOpen(true)}
+            >
+              <MessageCircle className="w-4 h-4 text-gray-600" />
+              <span className="text-sm text-gray-600">
+                {formatNumber(post.reviewCount || 0)}
+              </span>
+            </Button>
+
             {/* Share Button */}
             <Button
               variant="light"
@@ -132,6 +147,12 @@ const DockingFloat = ({ post }: DockingFloatProps) => {
           </div>
         </CardBody>
       </Card>
+      <ReviewBottomSheet
+        isOpen={isReviewOpen}
+        onOpenChange={setIsReviewOpen}
+        scope={{ postId: post.id }}
+        header={{ title: post.title, image: post.postPlaces[0]?.place?.image }}
+      />
     </div>
   );
 };

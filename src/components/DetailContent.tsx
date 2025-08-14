@@ -9,7 +9,7 @@ import DetailContentSkeleton from "./DetailContentSkeleton";
 import { usePostBySlug } from "@/hooks/useApi";
 import { useRouter } from "nextjs-toploader/app";
 import type { Post } from "@/types/api";
-import { capitalizeWords } from "@/utils/strings";
+import { capitalizeWords, formatCurrencyIDR } from "@/utils/strings";
 import { formatRelativeTime } from "@/utils/dates";
 import { getDefaultPostImage } from "@/utils/ui";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
@@ -153,13 +153,28 @@ const DetailContent = ({ slug, isOwner }: DetailContentProps) => {
           }}
           className="cursor-pointer"
         />
-        <div className="flex items-center text-sm text-gray-500">
+        <div className="flex items-center text-sm text-gray-500 gap-3">
           <Clock className="w-4 h-4 mr-1" />
           {formatRelativeTime(postResponse.createdAt)}
+          {typeof postResponse.budget === "number" && (
+            <span className="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              {formatCurrencyIDR(postResponse.budget)}
+            </span>
+          )}
         </div>
       </div>
 
       <Divider className="my-6" />
+
+      {/* Description */}
+      {postResponse.description && (
+        <div className="mb-6 md:px-0 px-6">
+          <h3 className="text-lg font-semibold mb-2">Description</h3>
+          <p className="text-gray-700 whitespace-pre-line">
+            {postResponse.description}
+          </p>
+        </div>
+      )}
 
       <h2 className="sm:text-2xl text-xl font-bold my-6 md:px-0 px-6">
         Locations in {capitalizeWords(postResponse.city.altName)}

@@ -107,4 +107,31 @@ export const queryKeys = {
       [...queryKeys.analytics.all, "top-cities", { limit }] as const,
     overview: () => [...queryKeys.analytics.all, "overview"] as const,
   },
+
+  // Categories
+  categories: {
+    all: ["categories"] as const,
+    lists: () => [...queryKeys.categories.all, "list"] as const,
+    list: (filters: Record<string, any>) =>
+      [...queryKeys.categories.lists(), { filters }] as const,
+  },
+
+  // Notifications
+  notifications: {
+    all: ["notifications"] as const,
+    lists: () => [...queryKeys.notifications.all, "list"] as const,
+    list: (filters: Record<string, any>) =>
+      [...queryKeys.notifications.lists(), { filters }] as const,
+    count: () => [...queryKeys.notifications.all, "count"] as const,
+  },
+
+  // Reviews
+  reviews: {
+    all: ["reviews"] as const,
+    lists: () => [...queryKeys.reviews.all, "list"] as const,
+    list: (filters: Record<string, any>) =>
+      [...queryKeys.reviews.lists(), { filters }] as const,
+    stats: (scope: { postId?: string; placeId?: string }) =>
+      [...queryKeys.reviews.all, "stats", scope] as const,
+  },
 } as const;

@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Allow favicon and icon files
+Allow: /favicon-*.png
+Allow: /android-chrome-*.png
+Allow: /apple-touch-icon.png
+Allow: /site.webmanifest
+
+# Sitemap
+Sitemap: /sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1

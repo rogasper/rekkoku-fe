@@ -15,8 +15,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
-import { useCities, useCreatePost } from "@/hooks/useApi";
-import { City } from "@/types/api";
+import { useCategories, useCities, useCreatePost } from "@/hooks/useApi";
+import { CategoryListItem, City } from "@/types/api";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRouter } from "nextjs-toploader/app";
 import { UI_CONSTANTS, DEFAULTS } from "@/utils/constants";
@@ -27,6 +27,7 @@ const MAX_GMAPS_LINKS = UI_CONSTANTS.MAX_GMAPS_LINKS;
 const createPostSchema = z.object({
   title: z.string().min(1, "Title is required").max(255, "Title too long"),
   cityId: z.string().min(1, "City ID is required"),
+  categoryId: z.string().optional().nullable(),
   gmapsLinks: z
     .array(
       z
@@ -69,18 +70,30 @@ export default function CreatePostModal({
     defaultValues: {
       title: "",
       cityId: "",
+      categoryId: "",
       gmapsLinks: [],
     },
   });
 
   const { mutate: createPost } = useCreatePost();
-  const { data: cities, isLoading: isLoadingCities } = useCities({
-    limit: UI_CONSTANTS.DEFAULT_PAGE_SIZE,
-    page: 1,
-    q: debouncedSearch || DEFAULTS.CITY_SEARCH,
-  });
+  const { data: cities, isLoading: isLoadingCities } = useCities(
+    {
+      limit: UI_CONSTANTS.DEFAULT_PAGE_SIZE,
+      page: 1,
+      q: debouncedSearch || DEFAULTS.CITY_SEARCH,
+    },
+    isOpen
+  );
+  const { data: categories, isLoading: isLoadingCategories } = useCategories(
+    isOpen,
+    {
+      all: true,
+    }
+  );
   const citiesData = cities?.data as City[];
+  const categoriesData = categories?.data as CategoryListItem[];
   const selectedCityId = watch("cityId");
+  const selectedCategoryId = watch("categoryId");
 
   const onSubmit = async (data: any) => {
     setIsLoadingSave(true);
@@ -179,44 +192,79 @@ export default function CreatePostModal({
                   isInvalid={!!errors.title}
                 />
 
-                {/* City Autocomplete */}
-                <label className="text-sm font-medium">City</label>
-                <Autocomplete
-                  placeholder="Search and select a city"
-                  variant="bordered"
-                  isRequired
-                  selectedKey={selectedCityId || null}
-                  onSelectionChange={(key: string | number | null) => {
-                    setValue("cityId", key as string);
-                    const selectedCity = citiesData?.find(
-                      (city) => city.id === key
-                    );
-                    if (selectedCity) {
-                      setSearch(selectedCity.name);
-                    }
-                  }}
-                  onInputChange={(value: string) => {
-                    setSearch(value);
-                  }}
-                  listboxProps={{
-                    emptyContent: isLoadingCities
-                      ? "Loading..."
-                      : "No cities found",
-                  }}
-                  errorMessage={errors.cityId?.message}
-                  isInvalid={!!errors.cityId}
-                  items={citiesData || []}
-                  isLoading={isLoadingCities}
-                  inputValue={search}
-                  allowsCustomValue={false}
-                  menuTrigger="input"
-                >
-                  {(city: City) => (
-                    <AutocompleteItem key={city.id}>
-                      {city.name}
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    {/* Category Autocomplete */}
+                    <label className="text-sm font-medium">
+                      Category (Optional)
+                    </label>
+                    <Autocomplete
+                      placeholder="Search and select a category"
+                      variant="bordered"
+                      selectedKey={selectedCategoryId || null}
+                      onSelectionChange={(key: string | number | null) => {
+                        setValue("categoryId", key as string);
+                      }}
+                      listboxProps={{
+                        emptyContent: isLoadingCategories
+                          ? "Loading..."
+                          : "No categories found",
+                      }}
+                      errorMessage={errors.categoryId?.message}
+                      isInvalid={!!errors.categoryId}
+                      defaultItems={categoriesData || []}
+                      isLoading={isLoadingCategories}
+                      allowsCustomValue={false}
+                      menuTrigger="input"
+                    >
+                      {(category: CategoryListItem) => (
+                        <AutocompleteItem key={category.id}>
+                          {category.name}
+                        </AutocompleteItem>
+                      )}
+                    </Autocomplete>
+                  </div>
+                  <div>
+                    {/* City Autocomplete */}
+                    <label className="text-sm font-medium">City</label>
+                    <Autocomplete
+                      placeholder="Search and select a city"
+                      variant="bordered"
+                      isRequired
+                      selectedKey={selectedCityId || null}
+                      onSelectionChange={(key: string | number | null) => {
+                        setValue("cityId", key as string);
+                        const selectedCity = citiesData?.find(
+                          (city) => city.id === key
+                        );
+                        if (selectedCity) {
+                          setSearch(selectedCity.name);
+                        }
+                      }}
+                      onInputChange={(value: string) => {
+                        setSearch(value);
+                      }}
+                      listboxProps={{
+                        emptyContent: isLoadingCities
+                          ? "Loading..."
+                          : "No cities found",
+                      }}
+                      errorMessage={errors.cityId?.message}
+                      isInvalid={!!errors.cityId}
+                      items={citiesData || []}
+                      isLoading={isLoadingCities}
+                      inputValue={search}
+                      allowsCustomValue={false}
+                      menuTrigger="input"
+                    >
+                      {(city: City) => (
+                        <AutocompleteItem key={city.id}>
+                          {city.name}
+                        </AutocompleteItem>
+                      )}
+                    </Autocomplete>
+                  </div>
+                </div>
 
                 {/* Google Maps URLs */}
                 <div className="flex flex-col gap-2">
