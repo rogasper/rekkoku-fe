@@ -219,7 +219,7 @@ export default function ExploreContent({
                         Filter by City
                       </label>
                       <Autocomplete
-                        placeholder="Select a city"
+                        placeholder="Search or select a city..."
                         variant="bordered"
                         selectedKey={localCityId || null}
                         onSelectionChange={(key: string | number | null) => {
@@ -255,6 +255,9 @@ export default function ExploreContent({
                         inputValue={citySearch}
                         allowsCustomValue={false}
                         menuTrigger="input"
+                        startContent={
+                          <Search className="w-4 h-4 text-gray-400" />
+                        }
                       >
                         {(city: City) => (
                           <AutocompleteItem key={city.id}>

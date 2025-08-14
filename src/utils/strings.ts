@@ -39,3 +39,17 @@ export const formatNumber = (number: number) => {
   const formatted = unitIndex === 0 ? value.toString() : value.toFixed(1);
   return formatted + units[unitIndex];
 };
+
+export const formatCurrencyIDR = (value?: number) => {
+  if (value === null || value === undefined || Number.isNaN(value))
+    return undefined;
+  try {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(value);
+  } catch {
+    return `Rp ${value.toLocaleString("id-ID")}`;
+  }
+};

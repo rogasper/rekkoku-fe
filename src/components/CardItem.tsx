@@ -1,12 +1,23 @@
 "use client";
 import { useBookmarkPost, useLikePost } from "@/hooks/useApi";
 import { Post } from "@/types/api";
-import { capitalizeWords, formatNumber } from "@/utils/strings";
+import {
+  capitalizeWords,
+  formatNumber,
+  formatCurrencyIDR,
+} from "@/utils/strings";
 import { Card, CardFooter, Image } from "@heroui/react";
-import { BookmarkIcon, HeartIcon, MapPinIcon, Share2Icon } from "lucide-react";
+import {
+  BookmarkIcon,
+  HeartIcon,
+  MapPinIcon,
+  Share2Icon,
+  MessageCircle,
+} from "lucide-react";
 import { useRouter } from "nextjs-toploader/app";
 import React, { useState } from "react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import ReviewBottomSheet from "./ReviewBottomSheet";
 
 interface CardItemProps {
   post: Post;
@@ -17,6 +28,7 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
   const [isLikeAnimating, setIsLikeAnimating] = useState(false);
   const [isBookmarkAnimating, setIsBookmarkAnimating] = useState(false);
   const [showFloatingHeart, setShowFloatingHeart] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
 
   const { mutate: likePost } = useLikePost();
   const { mutate: bookmarkPost } = useBookmarkPost();
@@ -93,9 +105,14 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
             {capitalizeWords(post.city.name)}
           </div>
           <div className="flex gap-2">
-            <div className="text-tiny text-white bg-[#EA7B26]/80  border-white/20 border-1 shadow-small py-1 px-4 rounded-2xl">
+            {typeof post.budget === "number" && (
+              <div className="text-tiny text-white bg-emerald-600/80 border-white/20 border-1 shadow-small py-1 px-3 rounded-2xl">
+                {formatCurrencyIDR(post.budget)}
+              </div>
+            )}
+            {/* <div className="text-tiny text-white bg-[#EA7B26]/80  border-white/20 border-1 shadow-small py-1 px-4 rounded-2xl">
               {post._count?.postPlaces} Places
-            </div>
+            </div> */}
             {post.distanceKm && (
               <div className="text-tiny text-white bg-[#EA7B26]/80  border-white/20 border-1 shadow-small py-1 px-4 rounded-2xl">
                 {post.distanceKm} km
@@ -149,6 +166,19 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
                 }`}
               >
                 {formatNumber(post.likeCount)}
+              </span>
+            </div>
+            {/* Reviews count */}
+            <div
+              className="flex gap-1 items-center cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsReviewOpen(true);
+              }}
+            >
+              <MessageCircle className="w-5 h-5 text-white" />
+              <span className="text-sm text-white">
+                {formatNumber(post.reviewCount || 0)}
               </span>
             </div>
             <div className="flex gap-1 items-center">
@@ -206,8 +236,29 @@ const CardItem: React.FC<CardItemProps> = ({ post }) => {
               </div>
             )}
           </div>
+          {post.category && (
+            <div className="w-fit flex items-end">
+              <span className="rounded-lg px-2 py-1 text-white text-tiny bg-[#EA7B26]/80">
+                {post.category?.name}
+              </span>
+            </div>
+          )}
         </div>
       </CardFooter>
+      {/* Review Bottom Sheet */}
+      {isReviewOpen && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <ReviewBottomSheet
+            isOpen={isReviewOpen}
+            onOpenChange={setIsReviewOpen}
+            scope={{ postId: post.id }}
+            header={{
+              title: post.title,
+              image: post.postPlaces[0]?.place?.image,
+            }}
+          />
+        </div>
+      )}
     </Card>
   );
 };

@@ -12,12 +12,13 @@ const TabsNavbar: React.FC<TabsNavbarProps> = ({
 }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const excludePaths = ["/search", "/about", "/notifications"];
   const handleSelectionChange = (key: React.Key) => {
     router.push(key as string);
   };
   return (
     <>
-      {pathname !== "/search" && pathname !== "/about" && (
+      {!excludePaths.includes(pathname) && (
         <div
           className={`${className}  backdrop-blur-sm shadow-lg border-b rounded-xl border-gray-200/50 sticky top-0 z-30`}
           {...props}

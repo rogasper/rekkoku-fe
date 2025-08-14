@@ -476,7 +476,7 @@ const SettingsPage = () => {
           </Button>
           <Button
             type="button"
-            className="w-fit"
+            className="w-fit lg:hidden"
             variant="solid"
             color="danger"
             onPress={() => {

@@ -8,8 +8,8 @@ import { useRouter } from "nextjs-toploader/app";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useCities, useUpdatePost } from "@/hooks/useApi";
-import type { Post, City } from "@/types/api";
+import { useCategories, useCities, useUpdatePost } from "@/hooks/useApi";
+import type { Post, City, CategoryListItem } from "@/types/api";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getDefaultPostImage } from "@/utils/ui";
 import { UI_CONSTANTS, DEFAULTS } from "@/utils/constants";
@@ -21,6 +21,12 @@ const MAX_GMAPS_LINKS = UI_CONSTANTS.MAX_GMAPS_LINKS;
 const editPostSchema = z.object({
   title: z.string().min(1, "Title is required").max(255, "Title too long"),
   cityId: z.string().min(1, "City ID is required"),
+  categoryId: z.string().optional().nullable(),
+  description: z.string().max(5000).optional().nullable(),
+  budget: z
+    .union([z.coerce.number().int().min(0), z.nan()])
+    .optional()
+    .nullable(),
   gmapsLinks: z
     .array(
       z
@@ -51,13 +57,23 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
   const [isLoadingSave, setIsLoadingSave] = useState(false);
 
   // Cities data for autocomplete
-  const { data: cities, isLoading: isLoadingCities } = useCities({
-    limit: UI_CONSTANTS.DEFAULT_PAGE_SIZE,
-    page: 1,
-    q: debouncedSearch || DEFAULTS.CITY_SEARCH,
-  });
+  const { data: cities, isLoading: isLoadingCities } = useCities(
+    {
+      limit: UI_CONSTANTS.DEFAULT_PAGE_SIZE,
+      page: 1,
+      q: debouncedSearch || DEFAULTS.CITY_SEARCH,
+    },
+    true
+  );
+  const { data: categories, isLoading: isLoadingCategories } = useCategories(
+    true,
+    {
+      all: true,
+    }
+  );
 
   const citiesData = cities?.data as City[];
+  const categoriesData = categories?.data as CategoryListItem[];
 
   // Update post mutation (disable auto-invalidation to prevent DOM errors)
   const { mutate: updatePost } = useUpdatePost(post?.id || "");
@@ -74,11 +90,17 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
     defaultValues: {
       title: post.title,
       cityId: post.cityId,
+      categoryId: post.categoryId,
+      description: post.description || "",
+      budget: post.budget ?? undefined,
       gmapsLinks: post.postPlaces?.map((p) => p.place.gmapsLink) || [],
     },
   });
 
   const selectedCityId = watch("cityId");
+  const selectedCategoryId = watch("categoryId");
+  const descriptionVal = watch("description");
+  const budgetVal = watch("budget");
 
   const handleBack = () => {
     router.push(`/review/${slug}`);
@@ -95,11 +117,21 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
       const newLinks = newGmapsUrls.filter((url) => url.trim() !== "");
       const allLinks = [...existingLinks, ...newLinks];
 
-      const submitData = {
+      const submitData: any = {
         title: data.title,
         cityId: data.cityId,
+        categoryId: data.categoryId,
         gmapsLinks: allLinks,
       };
+
+      if (data.description !== undefined)
+        submitData.description = data.description || undefined;
+      if (
+        data.budget !== undefined &&
+        data.budget !== null &&
+        !Number.isNaN(data.budget)
+      )
+        submitData.budget = Number(data.budget);
 
       // Direct API call without mutation to avoid state updates
       // await apiClient.put(`/posts/${postResponse?.id}`, submitData);
@@ -272,7 +304,7 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
             translate="no"
           >
             {/* Title and City */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-600">
                   Post Title
@@ -291,52 +323,126 @@ const EditPostContent = ({ slug, post }: EditPostContentProps) => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600">
-                  City
-                </label>
-                <Autocomplete
-                  aria-label="City"
-                  placeholder="Search and select a city"
-                  variant="bordered"
-                  key={`autocomplete-${selectedCityId}`}
-                  selectedKey={selectedCityId || null}
-                  onSelectionChange={(key: string | number | null) => {
-                    if (!isLoadingSave) {
-                      setValue("cityId", key as string);
-                      const selectedCity = citiesData?.find(
-                        (city) => city.id === key
-                      );
-                      if (selectedCity) {
-                        setSearch(selectedCity.name);
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">
+                    Category
+                  </label>
+                  <Autocomplete
+                    aria-label="Category"
+                    placeholder="Search and select a category"
+                    variant="bordered"
+                    key={`autocomplete-${selectedCategoryId}`}
+                    selectedKey={selectedCategoryId || null}
+                    onSelectionChange={(key: string | number | null) => {
+                      if (!isLoadingSave) {
+                        setValue("categoryId", key as string);
                       }
-                    }
-                  }}
-                  onInputChange={(value: string) => {
-                    if (!isLoadingSave) {
-                      setSearch(value);
-                    }
-                  }}
-                  listboxProps={{
-                    emptyContent: isLoadingCities
-                      ? "Loading..."
-                      : "No cities found",
-                  }}
-                  errorMessage={errors.cityId?.message}
-                  isInvalid={!!errors.cityId}
-                  items={citiesData || []}
-                  isLoading={isLoadingCities}
-                  inputValue={search}
-                  allowsCustomValue={false}
-                  menuTrigger="input"
-                  isDisabled={isLoadingSave}
-                >
-                  {(city: City) => (
-                    <AutocompleteItem key={city.id}>
-                      {city.name}
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
+                    }}
+                    listboxProps={{
+                      emptyContent: isLoadingCategories
+                        ? "Loading..."
+                        : "No categories found",
+                    }}
+                    errorMessage={errors.categoryId?.message}
+                    isInvalid={!!errors.categoryId}
+                    defaultItems={categoriesData || []}
+                    isLoading={isLoadingCategories}
+                    allowsCustomValue={false}
+                    menuTrigger="input"
+                    value={selectedCategoryId || undefined}
+                    isDisabled={isLoadingSave}
+                  >
+                    {(category: CategoryListItem) => (
+                      <AutocompleteItem key={category.id}>
+                        {category.name}
+                      </AutocompleteItem>
+                    )}
+                  </Autocomplete>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">
+                    City
+                  </label>
+                  <Autocomplete
+                    aria-label="City"
+                    placeholder="Search and select a city"
+                    variant="bordered"
+                    key={`autocomplete-${selectedCityId}`}
+                    selectedKey={selectedCityId || null}
+                    onSelectionChange={(key: string | number | null) => {
+                      if (!isLoadingSave) {
+                        setValue("cityId", key as string);
+                        const selectedCity = citiesData?.find(
+                          (city) => city.id === key
+                        );
+                        if (selectedCity) {
+                          setSearch(selectedCity.name);
+                        }
+                      }
+                    }}
+                    onInputChange={(value: string) => {
+                      if (!isLoadingSave) {
+                        setSearch(value);
+                      }
+                    }}
+                    listboxProps={{
+                      emptyContent: isLoadingCities
+                        ? "Loading..."
+                        : "No cities found",
+                    }}
+                    errorMessage={errors.cityId?.message}
+                    isInvalid={!!errors.cityId}
+                    items={citiesData || []}
+                    isLoading={isLoadingCities}
+                    inputValue={search}
+                    allowsCustomValue={false}
+                    menuTrigger="input"
+                    isDisabled={isLoadingSave}
+                  >
+                    {(city: City) => (
+                      <AutocompleteItem key={city.id}>
+                        {city.name}
+                      </AutocompleteItem>
+                    )}
+                  </Autocomplete>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">
+                    Description (optional)
+                  </label>
+                  <Input
+                    aria-label="Description"
+                    placeholder="Share your story or helpful notes..."
+                    variant="bordered"
+                    {...register("description")}
+                    errorMessage={errors.description?.message as any}
+                    classNames={{ input: "focus:outline-none" }}
+                    isInvalid={!!errors.description}
+                    isDisabled={isLoadingSave}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-600">
+                    Budget (start from)
+                  </label>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    aria-label="Budget"
+                    placeholder="e.g. 50000"
+                    variant="bordered"
+                    {...register("budget")}
+                    errorMessage={errors.budget?.message as any}
+                    classNames={{ input: "focus:outline-none" }}
+                    isInvalid={!!errors.budget}
+                    isDisabled={isLoadingSave}
+                  />
+                </div>
               </div>
             </div>
 

@@ -4,9 +4,9 @@
  */
 
 import { Post, ApiResponse, City } from "@/types/api";
+import { getApiBaseUrl } from "@/utils/url";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3030";
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Server-side fetch utility

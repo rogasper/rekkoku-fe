@@ -14,7 +14,7 @@ export default async function MainLayout({
   return (
     <>
       <FloatingNavbar isAuthenticated={isAuthenticated} />
-      <TabsNavbar className="max-w-[1024px] sm:mt-4 mt-1 mx-auto px-4 sm:px-0" />
+      <TabsNavbar className="max-w-[1024px] sm:mt-0 mt-1 mx-auto px-4 sm:px-0" />
       {children}
       <FloatingCreateButton />
       <BottomNavigation isAuthenticated={isAuthenticated} />

@@ -1,7 +1,9 @@
 import HomeContent from "@/components/HomeContent";
 import type { Metadata } from "next";
+import { env } from "@/config/env";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(env.APP_URL),
   title: "Rekkoku | Rekomendasi dari Aku - Travel Guide Indonesia",
   description:
     "Temukan dan bagikan rekomendasi tempat wisata, kuliner, dan destinasi terbaik di Indonesia. Platform travel guide berbasis komunitas untuk mengeksplorasi keindahan Nusantara.",

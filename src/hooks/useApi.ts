@@ -355,11 +355,12 @@ export function useDeletePost() {
 }
 
 // ===== CITIES HOOKS =====
-export function useCities(filters?: Record<string, any>) {
+export function useCities(filters?: Record<string, any>, enabled?: boolean) {
   return useQuery({
     queryKey: queryKeys.cities.list(filters || {}),
     queryFn: () =>
       apiClient.get(API_ENDPOINTS.CITIES.GET_ALL, { params: filters }),
+    enabled: !!enabled,
   });
 }
 
@@ -656,5 +657,164 @@ export function useAnalyticsOverview() {
     queryKey: queryKeys.analytics.overview(),
     queryFn: () => apiClient.get(API_ENDPOINTS.ANALYTICS.OVERVIEW),
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useCategories(isOpen?: boolean, filters?: Record<string, any>) {
+  return useQuery({
+    queryKey: queryKeys.categories.lists(),
+    queryFn: () =>
+      apiClient.get(API_ENDPOINTS.CATEGORIES.GET_ALL, {
+        params: {
+          ...filters,
+        },
+      }),
+    enabled: !!isOpen,
+  });
+}
+
+export function useNotifications(filters?: Record<string, any>) {
+  return useQuery({
+    queryKey: queryKeys.notifications.list(filters || {}),
+    queryFn: () =>
+      apiClient.get(API_ENDPOINTS.NOTIFICATIONS.GET_ALL, { params: filters }),
+  });
+}
+
+export function useMarkNotificationAsRead() {
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient.put(API_ENDPOINTS.NOTIFICATIONS.UPDATE(id), { read: true }),
+  });
+}
+
+export function useMarkAllNotificationsAsRead() {
+  return useMutation({
+    mutationFn: () => apiClient.post(API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ),
+  });
+}
+
+export function useNotificationCount(enabled?: boolean) {
+  return useQuery({
+    queryKey: queryKeys.notifications.count(),
+    queryFn: () => apiClient.get(API_ENDPOINTS.NOTIFICATIONS.GET_COUNT),
+    enabled: !!enabled,
+  });
+}
+
+// ===== REVIEWS HOOKS =====
+export function useReviews(filters?: {
+  postId?: string;
+  placeId?: string;
+  userId?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  return useQuery({
+    queryKey: queryKeys.reviews.list(filters || {}),
+    queryFn: () =>
+      apiClient.get(API_ENDPOINTS.REVIEWS.GET_ALL, {
+        params: filters,
+      }),
+    enabled: !!(filters?.postId || filters?.placeId || filters?.userId),
+  });
+}
+
+export function useReviewStats(scope: { postId?: string; placeId?: string }) {
+  return useQuery({
+    queryKey: queryKeys.reviews.stats(scope),
+    queryFn: () =>
+      apiClient.get(API_ENDPOINTS.REVIEWS.GET_STATS, {
+        params: scope,
+      }),
+    enabled: !!(scope.postId || scope.placeId),
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useCreateReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      postId?: string;
+      placeId?: string;
+      rating: number;
+      comment?: string;
+    }) => apiClient.post(API_ENDPOINTS.REVIEWS.CREATE, data),
+    onSuccess: (_data, variables) => {
+      // Invalidate lists and stats for the relevant scope
+      if (variables.postId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.list({ postId: variables.postId }),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.stats({ postId: variables.postId }),
+        });
+      }
+      if (variables.placeId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.list({ placeId: variables.placeId }),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.stats({ placeId: variables.placeId }),
+        });
+      }
+    },
+  });
+}
+
+export function useUpdateReview(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      rating?: number;
+      comment?: string;
+      postId?: string;
+      placeId?: string;
+    }) => apiClient.put(API_ENDPOINTS.REVIEWS.UPDATE(id), data),
+    onSuccess: (_data, variables) => {
+      if (variables.postId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.list({ postId: variables.postId }),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.stats({ postId: variables.postId }),
+        });
+      }
+      if (variables.placeId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.list({ placeId: variables.placeId }),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.stats({ placeId: variables.placeId }),
+        });
+      }
+    },
+  });
+}
+
+export function useDeleteReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params: { id: string; postId?: string; placeId?: string }) =>
+      apiClient.delete(API_ENDPOINTS.REVIEWS.DELETE(params.id)),
+    onSuccess: (_data, variables) => {
+      if (variables.postId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.list({ postId: variables.postId }),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.stats({ postId: variables.postId }),
+        });
+      }
+      if (variables.placeId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.list({ placeId: variables.placeId }),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.reviews.stats({ placeId: variables.placeId }),
+        });
+      }
+    },
   });
 }
